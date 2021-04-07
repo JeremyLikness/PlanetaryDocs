@@ -1,0 +1,86 @@
+﻿@inject IDocumentService DocumentService
+
+<div class="container">
+    <div class="row">
+        <div class="col-3 text-right">
+            Tag:
+        </div>
+        <div class="col-9">
+            <input @bind-value="tag" @bind-value:event="oninput" placeholder="Enter tag name" />
+            @if (tags != null)
+            {
+                foreach (var tagResult in tags)
+                {
+                    <p @onclick="async ()=>await SetSelectionAsync(tagResult)">@tagResult</p>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SelectedTag { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SelectedTagChanged { get; set; }
+
+    private bool loading = false;
+    private string _tag = string.Empty;
+    private List<string> tags = null;
+    private string tag
+    {
+        get => _tag;
+        set
+        {
+            if (value != _tag)
+            {
+                _tag = value;
+                InvokeAsync(() => TagUpdateAsync());
+            }
+        }
+    }
+
+    private async Task SetSelectionAsync(string selection)
+    {
+        if (!string.IsNullOrWhiteSpace(selection))
+        {
+            tag = selection;
+        }
+
+        SelectedTag = selection;
+        await SelectedTagChanged.InvokeAsync(SelectedTag);
+    }
+
+    private async Task TagUpdateAsync()
+    {
+        if (loading)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_tag))
+        {
+            loading = true;
+            tags = await DocumentService.SearchTagsAsync(_tag);
+
+            if (tags.Count == 1 && SelectedTag != tags[0])
+            {
+                await SetSelectionAsync(tags[0]);
+            }
+
+            if (!SelectedTag.StartsWith(_tag))
+            {
+                await SetSelectionAsync(string.Empty);
+            }
+            StateHasChanged();
+            loading = false;
+            return;
+        }
+        else
+        {
+            tags = null;
+            await SetSelectionAsync(string.Empty);
+        }
+    }
+}

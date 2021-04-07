@@ -1,0 +1,150 @@
+﻿@page "/"
+@inject IDocumentService DocumentService
+@inject LoadingService LoadingService
+
+<h1>Planetary Docs <LoadingIndicator/></h1>
+
+<div class="container fixed">
+    <div class="row">
+        <div class="col-12">
+            <strong>Search Documents:</strong>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <input @bind-value="searchText" 
+                   @bind-value:event="oninput"
+                   autofocus
+                   placeholder="Enter search text"/>
+        </div>
+        <div class="col">
+            <AliasSearch @bind-SelectedAlias="Alias"/>
+        </div>
+        <div class="col">
+            <TagSearch @bind-SelectedTag="Tag"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="container">
+            @if (loading)
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-warning">🔎 Searching...</div>
+                    </div>
+                </div>
+            }
+            @if (docsList != null && !loading)
+            {
+            <div class="row">
+                <div class="col-12">
+                    Search criteria: Alias = '@_alias', Tag = '@_tag', SearchText = '@_text''
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        @if (docsList.Count < 1)
+                        {
+                            <span>No documents found.</span>
+                        }
+                        @if (docsList.Count == 1)
+                        {
+                            <span>One document found.</span>
+                        }
+                        @if (docsList.Count > 1)
+                        {
+                            <span>@docsList.Count documents found.</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <b>Alias</b>
+                </div>
+                <div class="col-9">
+                    <b>Title</b>
+                </div>
+            </div>
+                foreach (var doc in docsList)
+                {
+                    <div class="row">
+                        <div class="col-3">
+                            @doc.AuthorAlias
+                        </div>
+                        <div class="col-9">
+                            @doc.Title
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool loading;
+    private string _alias = string.Empty;
+    private string _tag = string.Empty;
+    private string _text = string.Empty;
+    private List<DocumentSummary> docsList = null;
+
+    private string searchText
+    {
+        get => _text;
+        set
+        {
+            var check = value.Trim();
+            if (check != _text)
+            {
+                _text = check;
+                InvokeAsync(async () => await SearchAsync());
+            }
+        }
+    }
+
+    private string Alias
+    {
+        get => _alias;
+        set
+        {
+            _alias = value;
+            InvokeAsync(async () => await SearchAsync());
+        }
+    }
+
+    private string Tag
+    {
+        get => _tag;
+        set
+        {
+            _tag = value;
+            InvokeAsync(async () => await SearchAsync());
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        if (loading)
+        {
+            return;
+        }
+        if (!string.IsNullOrEmpty(_alias) ||
+            !string.IsNullOrEmpty(_tag) ||
+            (!string.IsNullOrEmpty(_text) && _text.Length > 3))
+        {
+            loading = true;
+            await LoadingService.WrapExecutionAsync(
+                async () =>
+            docsList = await DocumentService.QueryDocumentsAsync(
+                _text,
+                _alias,
+                _tag));
+            loading = false;
+        }
+        else
+        {
+            docsList = null;
+        }
+        StateHasChanged();
+    }
+}

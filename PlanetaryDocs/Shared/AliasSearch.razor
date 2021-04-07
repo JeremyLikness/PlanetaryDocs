@@ -1,0 +1,90 @@
+﻿@inject IDocumentService DocumentService
+@inject LoadingService LoadingService
+
+<div class="container">
+    <div class="row">
+        <div class="col-3 text-right">
+            Alias:
+        </div>
+        <div class="col-9">
+            <input @bind-value="alias" @bind-value:event="oninput" placeholder="Enter alias" />
+            @if (aliases != null)
+            {
+                foreach (var aliasResult in aliases)
+                {
+                    <p @onclick="async ()=>await SetSelectionAsync(aliasResult)">@aliasResult</p>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SelectedAlias { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SelectedAliasChanged { get; set; }
+
+    private bool loading = false;
+    private string _alias = string.Empty;
+    private List<string> aliases = null;
+    private string alias
+    {
+        get => _alias;
+        set
+        {
+            if (value != _alias)
+            {
+                _alias = value;
+                InvokeAsync(() => AliasUpdateAsync());
+            }
+        }
+    }
+
+    private async Task SetSelectionAsync(string selection)
+    {
+        if (!string.IsNullOrWhiteSpace(selection))
+        {
+            alias = selection;
+        }
+
+        SelectedAlias = selection;
+        await SelectedAliasChanged.InvokeAsync(SelectedAlias);
+    }
+
+    private async Task AliasUpdateAsync()
+    {
+        if (loading)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_alias))
+        {
+            loading = true;
+            
+            await LoadingService.WrapExecutionAsync(
+                async () => 
+                aliases = await DocumentService.SearchAuthorsAsync(_alias));
+            
+            if (aliases.Count == 1 && SelectedAlias != aliases[0])
+            {
+                await SetSelectionAsync(aliases[0]);
+            }
+
+            if (!SelectedAlias.StartsWith(_alias))
+            {
+                await SetSelectionAsync(string.Empty);
+            }
+            StateHasChanged();
+            loading = false;
+            return;
+        }
+        else
+        {
+            aliases = null;
+            await SetSelectionAsync(string.Empty);
+        }
+    }
+}
