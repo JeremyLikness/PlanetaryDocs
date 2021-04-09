@@ -1,0 +1,281 @@
+﻿@inject IDocumentService DocumentService
+@inject LoadingService LoadingService
+
+@if (DocumentToEdit != null)
+{
+<div class="container">
+    <div class="row">
+        <div class="alert alert-info">
+            Editing document with id '@DocumentToEdit.Uid'
+        </div>
+    </div>
+    @if (validationResults.Any(vr => vr.IsValid == false))
+    {
+        <div class="row">
+            <div class="col-12">
+                <ul>
+                    @foreach (var vr in validationResults.Where
+(v => v.IsValid == false))
+                    {
+                        <li>⚠ @vr.Message</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col-3 text-right">
+            Title:
+        </div>
+        <div class="col-9">
+            <ValidatedInput PlaceHolder="Enter the document title"
+                            @bind-Value="@title"
+                            @bind-Validation="@titleValidation"
+                            Validate="value => ValidationRules.IsSimpleText(nameof(Document.Title), value)" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-3 text-right">
+            <a href="#"
+               @onclick="async () => await ToggleAliasAsync()"
+               @onclick:preventDefault>
+                @aliasButton
+            </a>&nbsp;
+            @if (!existingAlias)
+            {
+                <span>Enter new alias:</span>
+            }
+        </div>
+        <div class="col-9">
+            @if (existingAlias)
+            {
+                <AliasSearch @bind-Alias="@alias" />
+            }
+            else
+            {
+                <ValidatedInput PlaceHolder="Enter the alias"
+                                @bind-Value="@alias"
+                                @bind-Validation="@aliasValidation"
+                                Validate="value => ValidationRules.IsAlphaOnly(nameof(Document.AuthorAlias), value)" />
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-3 text-right">
+            Choose tags:
+        </div>
+        <div class="col-9">
+            <TagPicker @bind-Tags="@tagList" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-3 text-right">
+            Description:
+        </div>
+        <div class="col-9">
+            <ValidatedInput PlaceHolder="Enter the description"
+                            @bind-Value="@description"
+                            @bind-Validation="@descriptionValidation"
+                            Validate="value => ValidationRules.IsRequired(nameof(Document.Description), value)" />
+        </div>
+    </div>
+</div>
+}
+
+@code {
+    [Parameter]
+    public Document DocumentToEdit { get; set; }
+
+    private List<string> tagList
+    {
+        get => DocumentToEdit.Tags;
+        set
+        {
+            DocumentToEdit.Tags.Clear();
+            DocumentToEdit.Tags.AddRange(value);
+            ChangeCount++;
+        }
+    }
+
+    private string title
+    {
+        get => DocumentToEdit.Title;
+        set
+        {
+            if (value != DocumentToEdit.Title)
+            {
+                DocumentToEdit.Title = value;
+                ChangeCount++;
+            }
+        }
+    }
+
+    private string description
+    {
+        get => DocumentToEdit.Description;
+        set
+        {
+            if (value != DocumentToEdit.Description)
+            {
+                DocumentToEdit.Description = value;
+                ChangeCount++;
+            }
+        }
+    }
+
+    [Parameter]
+    public bool Insert { get; set; }
+
+    [Parameter]
+    public bool IsValid { get; set; }
+
+    [Parameter]
+    public int ChangeCount
+    {
+        get => changeCount;
+        set
+        {
+            if (value != changeCount)
+            {
+                changeCount = value;
+                InvokeAsync(async () => await ChangeCountChanged.InvokeAsync(changeCount));
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int> ChangeCountChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsValidChanged { get; set; }
+
+    private List<ValidationResult> validationResults =
+        new List<ValidationResult>();
+
+    private int changeCount;
+
+    private bool existingAlias = true;
+    private string aliasButton => existingAlias ? "Add New Alias"
+        : "Choose Existing Alias";
+
+    private ValidationResult _aliasValidation =
+        ValidationRules.ValidResult();
+    private ValidationResult _publishValidation = null;
+    private ValidationResult _titleValidation =
+        ValidationRules.ValidResult();
+    private ValidationResult _descriptionValidation = null;
+    private ValidationResult _markdownValidation = null;
+
+    private string alias
+    {
+        get => DocumentToEdit.AuthorAlias;
+        set
+        {
+            if (value != DocumentToEdit.AuthorAlias)
+            {
+                DocumentToEdit.AuthorAlias = value;
+                ChangeCount++;
+                InvokeAsync(ValidateAliasAsync);
+            }
+        }
+    }
+
+    private ValidationResult titleValidation
+    {
+        get => _titleValidation;
+        set
+        {
+            _titleValidation = value;
+            OnValidationChange();
+        }
+    }
+
+    private ValidationResult descriptionValidation
+    {
+        get => _descriptionValidation;
+        set
+        {
+            _descriptionValidation = value;
+            OnValidationChange();
+        }
+    }
+
+    private ValidationResult aliasValidation
+    {
+        get => _aliasValidation;
+        set
+        {
+            _aliasValidation = value;
+            OnValidationChange();
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        existingAlias = true;
+        OnValidationChange();
+        base.OnParametersSet();
+    }
+
+    private void OnValidationChange()
+    {
+        validationResults.Clear();
+        _titleValidation = _titleValidation ?? ValidationRules.ValidResult();
+        _aliasValidation = _aliasValidation ?? ValidationRules.ValidResult();
+        _descriptionValidation = _descriptionValidation ?? ValidationRules.ValidResult();
+        validationResults.Add(_titleValidation);
+        validationResults.Add(_aliasValidation);
+        validationResults.Add(_descriptionValidation);
+        var isValid = validationResults.All(vr => vr.IsValid);
+        if (isValid != IsValid)
+        {
+            IsValid = isValid;
+            InvokeAsync(
+                async () =>
+                await IsValidChanged.InvokeAsync(isValid));
+        }
+    }
+
+    private async Task ToggleAliasAsync()
+    {
+        DocumentToEdit.AuthorAlias = string.Empty;
+        existingAlias = !existingAlias;
+        await ValidateAliasAsync();
+    }
+
+    private async Task ValidateAliasAsync()
+    {
+        if (existingAlias)
+        {
+            _aliasValidation = string.IsNullOrWhiteSpace(alias) ?
+                ValidationRules.InvalidResult("You must select an alias.")
+                : ValidationRules.ValidResult();
+        }
+        else
+        {
+            var aliasToCheck = DocumentToEdit.AuthorAlias;
+            _aliasValidation = ValidationRules.IsAlphaOnly(
+                nameof(Document.AuthorAlias),
+                aliasToCheck);
+
+            if (_aliasValidation.IsValid)
+            {
+                List<string> aliases = null;
+
+                await LoadingService.WrapExecutionAsync(
+                    async () =>
+                        aliases = await DocumentService.SearchAuthorsAsync(
+                    aliasToCheck));
+                if (aliases.Any(a => a == aliasToCheck))
+                {
+                    _aliasValidation = new ValidationResult
+                    {
+                        IsValid = false,
+                        Message = $"Alias '{aliasToCheck}' already exists."
+                    };
+                }
+            }
+        }
+        OnValidationChange();
+    }
+}

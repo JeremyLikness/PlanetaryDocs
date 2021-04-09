@@ -1,0 +1,23 @@
+﻿@inject IJSRuntime JsRuntime
+<div @ref="htmlContainer">
+    &nbsp;
+</div>
+@code {
+    [Parameter]
+    public string Html { get; set; }
+
+    public ElementReference htmlContainer;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync(
+                "markdownExtensions.toHtml",
+                Html,
+                htmlContainer);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}
+}

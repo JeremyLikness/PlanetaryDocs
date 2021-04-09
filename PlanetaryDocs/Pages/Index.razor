@@ -1,8 +1,12 @@
 ﻿@page "/"
+
+@using System.Net;
+
 @inject IDocumentService DocumentService
 @inject LoadingService LoadingService
+@inject NavigationManager NavigationService
 
-<h1>Planetary Docs <LoadingIndicator/></h1>
+<h1>Planetary Docs <LoadingIndicator /></h1>
 
 <div class="container fixed">
     <div class="row">
@@ -10,18 +14,18 @@
             <strong>Search Documents:</strong>
         </div>
     </div>
-    <div class="row">
+    <div class="row @(loading ? "loading" : string.Empty)">
         <div class="col">
-            <input @bind-value="searchText" 
+            <input @bind-value="searchText"
                    @bind-value:event="oninput"
                    autofocus
-                   placeholder="Enter search text"/>
+                   placeholder="Enter search text" />
         </div>
         <div class="col">
-            <AliasSearch @bind-SelectedAlias="Alias"/>
+            <AliasSearch @bind-Alias="Alias"/>
         </div>
         <div class="col">
-            <TagSearch @bind-SelectedTag="Tag"/>
+            <TagSearch @bind-Tag="Tag" />
         </div>
     </div>
     <div class="row">
@@ -36,42 +40,54 @@
             }
             @if (docsList != null && !loading)
             {
-            <div class="row">
-                <div class="col-12">
-                    Search criteria: Alias = '@_alias', Tag = '@_tag', SearchText = '@_text''
-                </div>
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        @if (docsList.Count < 1)
-                        {
-                            <span>No documents found.</span>
-                        }
-                        @if (docsList.Count == 1)
-                        {
-                            <span>One document found.</span>
-                        }
-                        @if (docsList.Count > 1)
-                        {
-                            <span>@docsList.Count documents found.</span>
-                        }
+                <div class="row">
+                    <div class="col-12">
+                        Search criteria: Alias = '@alias', Tag = '@tag', SearchText = '@text''
+                    </div>
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            @if (docsList.Count < 1)
+                            {
+                                <span>No documents found.</span>
+                            }
+                            @if (docsList.Count == 1)
+                            {
+                                <span>One document found.</span>
+                            }
+                            @if (docsList.Count > 1)
+                            {
+                                <span>@docsList.Count documents found.</span>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <b>Alias</b>
+                <div class="row">
+                    <div class="col-2">
+                        &nbsp;
+                    </div>
+                    <div class="col-4">
+                        <b>Alias</b>
+                    </div>
+                    <div class="col-6">
+                        <b>Title</b>
+                    </div>
                 </div>
-                <div class="col-9">
-                    <b>Title</b>
-                </div>
-            </div>
                 foreach (var doc in docsList)
                 {
-                    <div class="row">
-                        <div class="col-3">
+                    <div class="row result">
+                        <div class="col-2">
+                            <a title="Edit document" href="/Edit/@(SafeUid(doc.Uid))">
+                                📝
+                            </a>
+                            &nbsp;
+                            <a title="View document" href="/View/@(SafeUid(doc.Uid))">
+                                👁
+                            </a>
+                        </div>
+                        <div class="col-4 clickable" @onclick="() => Navigate(doc.Uid)">
                             @doc.AuthorAlias
                         </div>
-                        <div class="col-9">
+                        <div class="col-6 clickable" @onclick="() => Navigate(doc.Uid)">
                             @doc.Title
                         </div>
                     </div>
@@ -83,20 +99,22 @@
 
 @code {
     private bool loading;
-    private string _alias = string.Empty;
-    private string _tag = string.Empty;
-    private string _text = string.Empty;
+    private bool navigatingToThisPage = true;
+    private bool searchQueued = false;
+    private string alias = string.Empty;
+    private string tag = string.Empty;
+    private string text = string.Empty;
     private List<DocumentSummary> docsList = null;
 
     private string searchText
     {
-        get => _text;
+        get => text;
         set
         {
             var check = value.Trim();
-            if (check != _text)
+            if (check != text)
             {
-                _text = check;
+                text = check;
                 InvokeAsync(async () => await SearchAsync());
             }
         }
@@ -104,47 +122,121 @@
 
     private string Alias
     {
-        get => _alias;
+        get => alias;
         set
         {
-            _alias = value;
-            InvokeAsync(async () => await SearchAsync());
+            if (value != alias)
+            {
+                alias = value;
+                if (!string.IsNullOrWhiteSpace(alias))
+                {
+                    InvokeAsync(SearchAsync);
+                }
+            }
         }
     }
 
     private string Tag
     {
-        get => _tag;
+        get => tag;
         set
         {
-            _tag = value;
+            if (tag != value)
+            {
+                tag = value;
+                if (!string.IsNullOrWhiteSpace(tag))
+                {
+                    InvokeAsync(async () => await SearchAsync());
+                }
+            }
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (navigatingToThisPage && NavigationService.Uri.IndexOf('?') > 0)
+        {
+            var queryString = NavigationService.Uri.Split('?');
+            var keyValuePairs = queryString[1].Split('&');
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                if (keyValuePair.IndexOf('=') > 0)
+                {
+                    var pair = keyValuePair.Split('=');
+                    switch (pair[0])
+                    {
+                        case nameof(text):
+                            text = WebUtility.UrlDecode(pair[1]);
+                            break;
+                        case nameof(alias):
+                            Alias = WebUtility.UrlDecode(pair[1]);
+                            break;
+                        case nameof(tag):
+                            tag = WebUtility.UrlDecode(pair[1]);
+                            break;
+                    }
+                }
+            }
+            navigatingToThisPage = false;
             InvokeAsync(async () => await SearchAsync());
         }
+        base.OnAfterRender(firstRender);
     }
 
     private async Task SearchAsync()
     {
         if (loading)
         {
+            searchQueued = true;
             return;
         }
-        if (!string.IsNullOrEmpty(_alias) ||
-            !string.IsNullOrEmpty(_tag) ||
-            (!string.IsNullOrEmpty(_text) && _text.Length > 3))
+
+        searchQueued = false;
+
+        if (!string.IsNullOrEmpty(alias) ||
+            !string.IsNullOrEmpty(tag) ||
+            (!string.IsNullOrEmpty(text) && text.Length > 2))
         {
             loading = true;
-            await LoadingService.WrapExecutionAsync(
-                async () =>
-            docsList = await DocumentService.QueryDocumentsAsync(
-                _text,
-                _alias,
-                _tag));
+            do
+            {
+                searchQueued = false;
+                await LoadingService.WrapExecutionAsync(
+                    async () =>
+                docsList = await DocumentService.QueryDocumentsAsync(
+                    text,
+                    alias,
+                    tag));
+            }
+            while (searchQueued);
             loading = false;
         }
         else
         {
             docsList = null;
         }
+
         StateHasChanged();
+
+        var searchParameters = new[]
+        {
+            ((nameof(text), WebUtility.UrlEncode(text))),
+            ((nameof(alias), WebUtility.UrlEncode(alias))),
+            ((nameof(tag), WebUtility.UrlEncode(tag)))
+        };
+        var queryString =
+            string.Join('&',
+            searchParameters.Select(p => $"{p.Item1}={p.Item2}"));
+        navigatingToThisPage = false;
+        NavigationService.NavigateTo($"/?{queryString}");
+    }
+
+    private string SafeUid(string uid) =>
+        WebUtility.UrlEncode(uid);
+
+    private void Navigate(string uid)
+    {
+        navigatingToThisPage = false;
+        NavigationService.NavigateTo($"/View/{SafeUid(uid)}");
     }
 }

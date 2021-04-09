@@ -8,7 +8,7 @@ namespace PlanetaryDocs
     {
         private int _asyncCount;
 
-        private object _lock = new object();
+        private readonly object _lock = new();
 
         public bool Loading => _asyncCount > 1;
 

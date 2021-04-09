@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Azure.Cosmos;
+using Microsoft.EntityFrameworkCore;
 using PlanetaryDocs.Domain;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace PlanetaryDocs.DataAccess
@@ -20,14 +22,16 @@ namespace PlanetaryDocs.DataAccess
             await HandleMetaAsync(context, document);
 
             context.Add(document);
-          
+
             await context.SaveChangesAsync();
         }
 
         public async Task<Document> LoadDocumentAsync(string uid)
         {
             using var context = factory.CreateDbContext();
-            return await context.FindAsync<Document>(uid);
+            return await context.Documents
+                    .WithPartitionKey(uid)
+                    .SingleOrDefaultAsync(d => d.Uid == uid);
         }
 
         public async Task<List<DocumentSummary>> QueryDocumentsAsync(
@@ -36,9 +40,9 @@ namespace PlanetaryDocs.DataAccess
             string tag)
         {
             using var context = factory.CreateDbContext();
-            
+
             var result = new HashSet<DocumentSummary>();
-            
+
             bool partialResults = false;
 
             if (!string.IsNullOrWhiteSpace(authorAlias))
@@ -57,7 +61,7 @@ namespace PlanetaryDocs.DataAccess
 
                 IEnumerable<DocumentSummary> resultSet =
                     Enumerable.Empty<DocumentSummary>();
-            
+
                 // alias _AND_ tag
                 if (partialResults)
                 {
@@ -112,21 +116,27 @@ namespace PlanetaryDocs.DataAccess
         public async Task<List<string>> SearchAuthorsAsync(string searchText)
         {
             using var context = factory.CreateDbContext();
-            return await context.Authors.Where(
-                a => a.Alias.Contains(searchText))
+            return (await context.Authors
                 .Select(a => a.Alias)
+                .ToListAsync())
+                .Where(
+                    a => a.Contains(searchText, System.StringComparison.InvariantCultureIgnoreCase))
                 .OrderBy(a => a)
-                .ToListAsync();
+                .ToList();
         }
 
         public async Task<List<string>> SearchTagsAsync(string searchText)
         {
             using var context = factory.CreateDbContext();
-            return await context.Tags.Where(
-                t => t.TagName.Contains(searchText))
+            var toSearch = searchText.Trim();
+            return (await context.Tags
                 .Select(t => t.TagName)
+                .ToListAsync())
+                .Where(t => t.Contains(
+                    searchText,
+                    System.StringComparison.InvariantCultureIgnoreCase))
                 .OrderBy(t => t)
-                .ToListAsync();
+                .ToList();
         }
 
         public async Task UpdateDocumentAsync(Document document)
@@ -135,28 +145,58 @@ namespace PlanetaryDocs.DataAccess
 
             await HandleMetaAsync(context, document);
 
-            context.Attach(document);
-            context.Entry(document).State = EntityState.Modified;
+            context.Update(document);
 
             await context.SaveChangesAsync();
         }
 
+        public async Task<List<DocumentAuditSummary>> LoadDocumentHistoryAsync(string uid)
+        {
+            using var context = factory.CreateDbContext();
+            return (await context.Audits
+                .WithPartitionKey(uid)
+                .Where(da => da.Uid == uid)
+                .ToListAsync())
+                .Select(da => new DocumentAuditSummary(da))
+                .OrderBy(das => das.Timestamp)
+                .ToList();
+        }
+
+        public async Task<Document> LoadDocumentSnapshotAsync(System.Guid guid, string uid)
+        {
+            using var context = factory.CreateDbContext();
+            try
+            {
+                var audit = await context.FindAsync<DocumentAudit>(guid, uid);
+                return audit.GetDocumentSnapshot();
+            }
+            catch (CosmosException ce)
+            {
+                if (ce.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                throw;
+            }
+        }
+
         private static async Task<Document> LoadDocNoTrackingAsync(
-            DocsContext context, Document document) =>
-                await context.Documents
-                    .WithPartitionKey(document.Uid)
-                    .AsNoTracking()
-                    .SingleOrDefaultAsync(d => d.Uid == document.Uid);
+        DocsContext context, Document document) =>
+            await context.Documents
+                .WithPartitionKey(document.Uid)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(d => d.Uid == document.Uid);
 
         private static async Task HandleMetaAsync(DocsContext context, Document document)
         {
-            var authorChanged = 
+            var authorChanged =
                 await CheckAuthorChangedAsync(context, document);
             await HandleTagsAsync(context, document, authorChanged);
         }
 
         private static async Task HandleTagsAsync(
-            DocsContext context, 
+            DocsContext context,
             Document document,
             bool authorChanged)
         {
@@ -180,7 +220,7 @@ namespace PlanetaryDocs.DataAccess
                         var docSummary =
                             tag.Documents.FirstOrDefault(
                                 d => d.Uid == document.Uid);
-                        
+
                         if (docSummary != null)
                         {
                             tag.Documents.Remove(docSummary);
@@ -204,10 +244,13 @@ namespace PlanetaryDocs.DataAccess
                 foreach (var tagName in tagsToChange)
                 {
                     var tag = await context.FindMetaAsync<Tag>(tagName);
-                    var ds = tag.Documents.Single(ds => ds.Uid == document.Uid);
-                    ds.Title = document.Title;
-                    ds.AuthorAlias = document.AuthorAlias;
-                    context.Entry(tag).State = EntityState.Modified;
+                    var ds = tag.Documents.SingleOrDefault(ds => ds.Uid == document.Uid);
+                    if (ds != null)
+                    {
+                        ds.Title = document.Title;
+                        ds.AuthorAlias = document.AuthorAlias;
+                        context.Entry(tag).State = EntityState.Modified;
+                    }
                 }
             }
 
@@ -215,7 +258,7 @@ namespace PlanetaryDocs.DataAccess
             foreach (var tagAdded in tagsAdded)
             {
                 var tag = await context.FindMetaAsync<Tag>(tagAdded);
-                
+
                 // new tag (overall)
                 if (tag == null)
                 {
@@ -268,7 +311,7 @@ namespace PlanetaryDocs.DataAccess
 
                 var newAuthor = await context.FindMetaAsync<Author>(
                     document.AuthorAlias);
-                
+
                 if (newAuthor == null)
                 {
                     newAuthor = new Author { Alias = document.AuthorAlias };

@@ -4,3 +4,16 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
+
+.result:hover {
+    background-color: lightgray;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.loading {
+    background-color: yellow;
+    border: solid 1px red thin;
+}

@@ -11,7 +11,28 @@
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
-        </li>        
+        </li>
+        <li class="nav-item px-3">
+            <DisabledNavLink class="nav-link"
+                             href="/View"
+                             Match="NavLinkMatch.Prefix">
+                <span class="oi oi-eye" aria-hidden="true"></span> View
+            </DisabledNavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link"
+                             href="/Add"
+                             Match="NavLinkMatch.Prefix">
+                <span class="oi oi-plus" aria-hidden="true"></span> Add New
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <DisabledNavLink class="nav-link"
+                             href="/Edit"
+                             Match="NavLinkMatch.Prefix">
+                <span class="oi oi-pencil" aria-hidden="true"></span> Edit
+            </DisabledNavLink>
+        </li>
     </ul>
 </div>
 

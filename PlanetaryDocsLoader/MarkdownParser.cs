@@ -67,7 +67,7 @@ namespace PlanetaryDocsLoader
 
                                 case "uid":
                                     uidFound = true;
-                                    doc.Uid = metadata[1].Trim();
+                                    doc.Uid = metadata[1].Trim().Replace('/','_');
                                     Console.WriteLine($"UID:\t{doc.Uid}");
                                     break;
 
@@ -128,6 +128,14 @@ namespace PlanetaryDocsLoader
                     doc.Markdown = string.Join(Environment.NewLine, markdown);
                     doc.Html = Markdown.ToHtml(doc.Markdown);
                     docsList.Add(doc);
+                    if (doc.Title.Contains("Tutorial")) // hack
+                    {
+                        doc.Title = $"Tutorial: {doc.Description}";
+                        if (doc.Title.Length > 60)
+                        {
+                            doc.Title = $"{doc.Title.Substring(0, 59)}...";   
+                        }
+                    }
                 }
                 else
                 {

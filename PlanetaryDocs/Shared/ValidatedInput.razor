@@ -1,0 +1,78 @@
+﻿<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <input class="@error"
+               type="text" @bind-value="@value" @bind-value:event="oninput"/>        
+        </div>
+    </div>
+    @if (Validation != null && Validation.IsValid == false)
+    {
+        <div class="row">
+            <div class="col-12">
+                <p>@Validation.Message</p>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string _originalValue = string.Empty;
+    private string _value = string.Empty;
+    private string error => Validation != null && Validation.IsValid == false
+        ? "error" : string.Empty;
+
+    [Parameter]
+    public string PlaceHolder { get; set; }
+
+    [Parameter]
+    public string Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public Func<string, ValidationResult> Validate { get; set; }
+
+    [Parameter]
+    public ValidationResult Validation { get; set; }
+
+    [Parameter]
+    public EventCallback<ValidationResult> ValidationChanged { get; set; }
+
+    private string value
+    {
+        get => _value;
+        set
+        {
+            if (value != _value)
+            {
+                _value = value;
+
+                Value = _value;
+                InvokeAsync(async () =>
+                    await ValueChanged.InvokeAsync(Value));
+                
+                validationResult = Validate(_value);
+
+                if (Validation == null ||
+                    validationResult.IsValid != Validation.IsValid ||
+                    validationResult.Message != Validation.Message)
+                {
+                    Validation = validationResult;
+                    InvokeAsync(async () =>
+                        await ValidationChanged.InvokeAsync(Validation));
+                }
+            }
+        }
+    }
+
+    private ValidationResult validationResult;
+
+    protected override void OnParametersSet()
+    {
+        validationResult = null;
+        _originalValue = Value;
+        _value = Value;
+        base.OnParametersSet();
+    }
+}

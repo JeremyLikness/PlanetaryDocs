@@ -1,0 +1,157 @@
+﻿@page "/Edit/{Uid}"
+
+@using System.Net;
+@using Microsoft.EntityFrameworkCore;
+
+@inject NavigationManager NavigationService
+@inject IDocumentService DocumentService
+@inject LoadingService LoadingService
+@inject TitleService TitleService 
+
+<div class="container">
+    @if (saving)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    📀 Pushing bits to the cosmos...
+                </div>
+            </div>
+        </div>
+    }
+    else if (loading)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    📀 Parsing the bits...
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col">
+                <button disabled="@(!IsValid || !isDirty)"
+                        @onclick="async () => await SaveAsync()"
+                        class="btn btn-success">
+                    💾 Save
+                </button>
+                <span class="small">&nbsp;(@changeCount changes detected)&nbsp;</span>
+                <button disabled="@(!isDirty)" class="btn btn-warning"
+                        @onclick="() => Reset()">
+                    🔃 Reset
+                </button>
+                <span>&nbsp;</span>
+                <button class="btn btn-danger"
+                        @onclick="() => Cancel()">
+                    ❌ Cancel
+                </button>
+            </div>
+        </div>
+        @if (concurrency)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-danger">
+                        ⚠ The document was updated since it was last loaded. You can save again to overwrite changes or reset to reload the document and view the changes.
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col-12">
+                <Editor DocumentToEdit="document" 
+                        @bind-IsValid="IsValid"
+                        @bind-ChangeCount="changeCount"
+                        />
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    private bool concurrency = false;
+    private bool loading = true;
+    private bool saving = false;
+    private Document document = null;
+    private string _uid = string.Empty;
+    private bool isValid = false;
+    private int changeCount = 0;
+
+    [Parameter]
+    public string Uid { get; set; }
+
+    public bool IsValid
+    {
+        get => isValid;
+        set
+        {
+            if (value != isValid)
+            {
+                isValid = value;
+                InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private bool isDirty => changeCount > 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Uid != _uid)
+        {
+            _uid = Uid;
+            loading = true;
+            document = null;
+            concurrency = false;
+            await LoadingService.WrapExecutionAsync(
+                async () => document =
+                await DocumentService.LoadDocumentAsync(_uid));
+            await TitleService.SetTitleAsync($"Editing '{_uid}'");
+            changeCount = 0;
+            loading = false;
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    private void Reset()
+    {
+        NavigationService.NavigateTo(NavigationService.Uri, true);
+    }
+
+    private void Cancel() 
+    {
+        NavigationService.NavigateTo("/");
+    }
+
+    public async Task SaveAsync()
+    {
+        if (isDirty && IsValid)
+        {
+            saving = true;
+            if (concurrency)
+            {
+                concurrency = false;
+                var original = await DocumentService.LoadDocumentAsync(document.Uid);
+                document.ETag = original.ETag;
+            }
+            try
+            {
+                await DocumentService.UpdateDocumentAsync(document);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                concurrency = true;
+            }
+            saving = false;
+            if (!concurrency)
+            {
+                changeCount = 0;
+                NavigationService.NavigateTo($"/View/{WebUtility.UrlEncode(document.Uid)}", true);
+            }
+        }
+    }
+}

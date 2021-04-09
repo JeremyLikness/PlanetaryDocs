@@ -32,5 +32,18 @@ namespace PlanetaryDocs.Domain
         public override string ToString() =>
             $"Document {Uid} by {AuthorAlias} with {Tags.Count} tags: {Title}.";
 
+        public Document Clone() =>
+            new ()
+            {
+                AuthorAlias = AuthorAlias,
+                Description = Description,
+                ETag = ETag,
+                Html = Html,
+                Markdown = Markdown,
+                PublishDate = PublishDate,
+                Tags = new List<string>(Tags),
+                Title = Title,
+                Uid = Uid
+            };
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PlanetaryDocs.Domain
@@ -19,5 +20,9 @@ namespace PlanetaryDocs.Domain
             string tag);
 
         Task<Document> LoadDocumentAsync(string uid);
+
+        Task<List<DocumentAuditSummary>> LoadDocumentHistoryAsync(string uid);
+
+        Task<Document> LoadDocumentSnapshotAsync(Guid guid, string uid);
     }
 }

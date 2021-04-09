@@ -36,6 +36,7 @@ namespace PlanetaryDocs
                     ));
             services.AddSingleton<IDocumentService, DocumentService>();
             services.AddSingleton<LoadingService>();
+            services.AddScoped<TitleService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

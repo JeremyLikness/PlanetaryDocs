@@ -24,5 +24,8 @@ namespace PlanetaryDocs.Domain
         public DateTimeOffset Timestamp { get; set; }
 
         public string Document { get; set; }
+
+        public Document GetDocumentSnapshot() =>
+            JsonSerializer.Deserialize<Document>(Document);
     }
 }

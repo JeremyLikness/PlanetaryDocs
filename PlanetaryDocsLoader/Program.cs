@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-const string DocsPath = @"c:\path\to\aspnetcore.docs";
+const string DocsPath = @"C:\path\to\aspnetcore.docs";
 const string EndPoint = "<your endpoint>";
 const string AccessKey = "<your key>";
 bool testsOnly = false; // set to true to re-run tests without rebuilding db

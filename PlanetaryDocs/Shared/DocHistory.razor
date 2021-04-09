@@ -1,0 +1,67 @@
+﻿@inject NavigationManager NavigationService
+@inject LoadingService LoadingService
+@inject IDocumentService DocumentService
+
+@using System.Net;
+
+@if (history != null)
+{
+    <div class="container">
+        @if (history.Count == 0)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info">No audits found for the document.</div>
+                </div>
+            </div>
+        }
+        @if (history.Count > 0)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info">@history.Count audit @(history.Count == 1 ? string.Empty : "s") found for the document.</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">Date Modified</div>
+                <div class="col-3">Alias</div>
+                <div class="col-6">Title</div>
+            </div>
+            @foreach (var item in history)
+            {
+                <div class="row summary" @onclick="() => Navigate(item)">
+                    <div class="col-3">@item.Timestamp</div>
+                    <div class="col-3">@item.Alias</div>
+                    <div class="col-3">@item.Title</div>
+                </div>
+            }
+        }
+    </div>
+}
+
+@code {
+    private List<DocumentAuditSummary> history = null;
+
+    private string _uid = string.Empty;
+
+    [Parameter]
+    public string Uid { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Uid != _uid)
+        {
+            _uid = Uid;
+            await LoadingService.WrapExecutionAsync(
+                async () =>
+                    history =
+                    await DocumentService.LoadDocumentHistoryAsync(_uid));
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    private void Navigate(DocumentAuditSummary audit)
+    {
+        NavigationService.NavigateTo($"/View/{WebUtility.UrlEncode(audit.Uid)}?history={audit.Id}", true);
+    }
+}
