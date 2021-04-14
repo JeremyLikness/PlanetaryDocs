@@ -1,8 +1,20 @@
 ﻿<div class="container">
     <div class="row">
         <div class="col-12">
+            @if (UseTextArea)
+            {
+                <textarea class="@error"
+                          rows="10" 
+                          cols="40"
+                          @bind-value="@value"
+                          @bind-value:event="oninput">
+                </textarea>
+            }
+            else
+            {
             <input class="@error"
                type="text" @bind-value="@value" @bind-value:event="oninput"/>        
+            }
         </div>
     </div>
     @if (Validation != null && Validation.IsValid == false)
@@ -39,6 +51,9 @@
     [Parameter]
     public EventCallback<ValidationResult> ValidationChanged { get; set; }
 
+    [Parameter]
+    public bool UseTextArea { get; set; }
+
     private string value
     {
         get => _value;
@@ -51,7 +66,7 @@
                 Value = _value;
                 InvokeAsync(async () =>
                     await ValueChanged.InvokeAsync(Value));
-                
+
                 validationResult = Validate(_value);
 
                 if (Validation == null ||

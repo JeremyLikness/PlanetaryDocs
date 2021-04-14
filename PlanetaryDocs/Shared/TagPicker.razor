@@ -2,17 +2,18 @@
 {
     foreach (var tag in Tags)
     {
-        <span>"@tag" [<a href="#"
+        <span>
+            "@tag" [<a href="#"
                        title="Remove"
                        @onclick="async () => await RemoveAsync(tag)"
                        @onclick:preventDefault>x</a>]
-        &nbsp;
+            &nbsp;
         </span>
     }
 }
 @if (pickNew)
 {
-    <TagSearch Tag="@NewTag"/>
+    <TagSearch Tag="@NewTag" />
 }
 else
 {
@@ -20,9 +21,10 @@ else
        @onclick="() => pickNew = true"
        @onclick:preventDefault>Pick Existing</a>
 }
-&nbsp;<input type="text" placeholder="Enter new tag"
-             @bind-value="addTag"
-             @bind-value:event="oninput"/>[
+&nbsp;
+<input type="text" placeholder="Enter new tag"
+       @bind-value="addTag"
+       @bind-value:event="oninput" />[
 @if (string.IsNullOrWhiteSpace(addTag))
 {
     <span>&nbsp;</span>
@@ -35,7 +37,7 @@ else
        @onclick:preventDefault>+</a>
 }]
 @code {
-        bool pickNew = false;
+    bool pickNew = false;
     private string newTag = string.Empty;
     private string addTag = string.Empty;
 

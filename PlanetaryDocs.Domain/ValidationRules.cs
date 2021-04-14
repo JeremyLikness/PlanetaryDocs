@@ -1,27 +1,45 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace PlanetaryDocs.Domain
 {
     public static class ValidationRules
     {
-        const char uidSeparator = '/';
         const string punctuation = "(),?!'\".";
+        const string uidAllowed = "_.-";
         const string lowRange = "az";
         const string highRange = "AZ";
         const string numbers = "09";
         
         public static ValidationResult ValidResult() =>
-            new () { IsValid = true };
+            new() { IsValid = true };
 
         public static ValidationResult InvalidResult(string message) =>
-            new ()
+            new()
             {
                 IsValid = false,
                 Message = message,
             };
 
+        public static ValidationResult CompoundResult(
+            string fieldName,
+            string fieldValue,
+            params Func<string, string, ValidationResult>[] validations)
+        {
+            var result = ValidResult();
+            foreach (var validation in validations)
+            {
+                result = validation(fieldName, fieldValue);
+                if (!result.IsValid)
+                {
+                    return result;
+                }
+            }
+            return result;
+        }
+
         public static ValidationResult IsRequired(
-            string fieldName, 
+            string fieldName,
             string val) => string.IsNullOrWhiteSpace(val) ?
                 InvalidResult($"{fieldName} is required.")
                 : ValidResult();
@@ -30,30 +48,17 @@ namespace PlanetaryDocs.Domain
             string fieldName,
             string val)
         {
-            var required = IsRequired(fieldName, val);
-
-            if (!required.IsValid)
-            {
-                return required;
-            }
-
             return val.All(c => (c >= lowRange[0] && c <= lowRange[1])
             || (c >= highRange[0] && c <= highRange[1])) ?
                 ValidResult()
                 : InvalidResult($"Field '{fieldName}' contains non-alpha characters.");
         }
-       
+
         public static ValidationResult IsSimpleText(
             string fieldName,
             string val,
             bool uidCheck = false)
         {
-            var required = IsRequired(fieldName, val);
-
-            if (!required.IsValid)
-            {
-                return required;
-            }
             var valid = true;
             var limits = new[] { lowRange, highRange, numbers };
 
@@ -69,12 +74,12 @@ namespace PlanetaryDocs.Domain
                     continue;
                 }
 
-                if (punctuation.Contains(c))
+                if (!uidCheck && punctuation.Contains(c))
                 {
                     continue;
                 }
 
-                if (uidCheck && c == uidSeparator)
+                if (uidCheck && uidAllowed.Contains(c))
                 {
                     continue;
                 }
@@ -100,5 +105,58 @@ namespace PlanetaryDocs.Domain
             return valid ? ValidResult() :
                 InvalidResult($"Field '{fieldName}' contains invalid characters.");
         }
+
+        public static ValidationResult ValidateProperty(
+            string name,
+            string value)
+        {
+            switch (name)
+            {
+                case nameof(Document.AuthorAlias):
+                    return CompoundResult(
+                        name,
+                        value,
+                        IsRequired,
+                        IsAlphaOnly);
+
+                case nameof(Document.Description):
+                    return IsRequired(
+                        name,
+                        value);
+
+                case nameof(Document.Markdown):
+                    return IsRequired(
+                        name,
+                        value);
+
+                case nameof(Document.Title):
+                    return CompoundResult(
+                        name,
+                        value,
+                        IsRequired,
+                        (n, v) => IsSimpleText(n, v, false));
+
+                case nameof(Document.Uid):
+                    return CompoundResult(
+                        name,
+                        value,
+                        IsRequired,
+                        (n, v) => IsSimpleText(n, v, true));
+            };
+
+            return InvalidResult("Unknown property.");
+        }
+
+        public static ValidationResult[] ValidateDocument(Document doc)
+        => doc == null ?
+            new[] { InvalidResult("Document cannot be null") }
+            : new[]
+            {
+                ValidateProperty(nameof(Document.Uid), doc.Uid),
+                ValidateProperty(nameof(Document.AuthorAlias), doc.AuthorAlias),
+                ValidateProperty(nameof(Document.Description), doc.Description),
+                ValidateProperty(nameof(Document.Markdown), doc.Markdown),
+                ValidateProperty(nameof(Document.Title), doc.Title)
+            };
     }
 }

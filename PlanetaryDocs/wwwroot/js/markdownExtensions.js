@@ -1,12 +1,18 @@
 ﻿window.markdownExtensions = {
     toHtml: (txt, target) => {
-        window.markdownExtensions.area =
-            window.markdownExtensions.area ??
-            document.createElement("textarea");
+        const area = document.createElement("textarea");
         setTimeout(() => {
-            const area = window.markdownExtensions.area;
             area.innerHTML = txt;
             target.innerHTML = area.value;
         }, 0);
-    }
-}
+    },
+    setText: (id, txt, target) => {
+        target.value = txt;
+        target.oninput = () => window.markdownExtensions.getText(id, target);
+    },
+    getText: (id, target) => DotNet.invokeMethodAsync(
+        'PlanetaryDocs',
+        'UpdateTextAsync',
+        id,
+        target.value)
+};

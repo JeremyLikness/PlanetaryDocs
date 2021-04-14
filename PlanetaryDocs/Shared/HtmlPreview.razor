@@ -3,21 +3,46 @@
     &nbsp;
 </div>
 @code {
+    private bool rendered;
+
+    private string html;
+
     [Parameter]
-    public string Html { get; set; }
+    public string Html
+    {
+        get => html;
+        set
+        {
+            if (value != html)
+            {
+                html = value;
+                InvokeAsync(OnUpdateAsync);
+            }
+        }
+    }
 
     public ElementReference htmlContainer;
+  
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
+            rendered = true;
+            await OnUpdateAsync();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async Task OnUpdateAsync()
+    {
+        if (rendered)
         {
             await JsRuntime.InvokeVoidAsync(
                 "markdownExtensions.toHtml",
                 Html,
                 htmlContainer);
         }
-        await base.OnAfterRenderAsync(firstRender);
     }
-}
 }

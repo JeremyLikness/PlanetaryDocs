@@ -6,7 +6,7 @@
 @inject NavigationManager NavigationService
 @inject IDocumentService DocumentService
 @inject LoadingService LoadingService
-@inject TitleService TitleService 
+@inject TitleService TitleService
 
 <div class="container">
     @if (saving)
@@ -35,16 +35,16 @@
             <div class="col">
                 <button disabled="@(!IsValid || !isDirty)"
                         @onclick="async () => await SaveAsync()"
-                        class="btn btn-success">
+                        class="btn btn-sm btn-success">
                     💾 Save
                 </button>
                 <span class="small">&nbsp;(@changeCount changes detected)&nbsp;</span>
-                <button disabled="@(!isDirty)" class="btn btn-warning"
+                <button disabled="@(!isDirty)" class="btn btn-sm btn-warning"
                         @onclick="() => Reset()">
                     🔃 Reset
                 </button>
                 <span>&nbsp;</span>
-                <button class="btn btn-danger"
+                <button class="btn btn-danger btn-sm"
                         @onclick="() => Cancel()">
                     ❌ Cancel
                 </button>
@@ -62,10 +62,10 @@
         }
         <div class="row">
             <div class="col-12">
-                <Editor DocumentToEdit="document" 
+                <Editor DocumentToEdit="document"
                         @bind-IsValid="IsValid"
                         @bind-ChangeCount="changeCount"
-                        />
+                        @ref="editor"/>
             </div>
         </div>
     }
@@ -80,6 +80,7 @@
     private string _uid = string.Empty;
     private bool isValid = false;
     private int changeCount = 0;
+    private Editor editor;
 
     [Parameter]
     public string Uid { get; set; }
@@ -99,6 +100,15 @@
 
     private bool isDirty => changeCount > 0;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrWhiteSpace(_uid))
+        {
+            await TitleService.SetTitleAsync($"Editing '{_uid}'");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         if (Uid != _uid)
@@ -110,7 +120,6 @@
             await LoadingService.WrapExecutionAsync(
                 async () => document =
                 await DocumentService.LoadDocumentAsync(_uid));
-            await TitleService.SetTitleAsync($"Editing '{_uid}'");
             changeCount = 0;
             loading = false;
         }
@@ -122,36 +131,45 @@
         NavigationService.NavigateTo(NavigationService.Uri, true);
     }
 
-    private void Cancel() 
+    private void Cancel()
     {
         NavigationService.NavigateTo("/");
     }
 
     public async Task SaveAsync()
     {
-        if (isDirty && IsValid)
+        if (!isDirty || !IsValid || !editor.ValidateAll(document))
         {
-            saving = true;
-            if (concurrency)
-            {
-                concurrency = false;
-                var original = await DocumentService.LoadDocumentAsync(document.Uid);
-                document.ETag = original.ETag;
-            }
-            try
-            {
-                await DocumentService.UpdateDocumentAsync(document);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                concurrency = true;
-            }
+            return;
+        }
+
+        saving = true;
+        if (concurrency)
+        {
+            concurrency = false;
+            Document original = null;
+            await LoadingService.WrapExecutionAsync(async () =>
+                original =
+                await DocumentService.LoadDocumentAsync(document.Uid));
+            document.ETag = original.ETag;
+        }
+        try
+        {
+            await LoadingService.WrapExecutionAsync(async () =>
+                await DocumentService.UpdateDocumentAsync(document));
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            concurrency = true;
+        }
+
+        if (!concurrency)
+        {
+            NavigationService.NavigateTo($"/View/{WebUtility.UrlEncode(document.Uid)}", true);
+        }
+        else
+        {
             saving = false;
-            if (!concurrency)
-            {
-                changeCount = 0;
-                NavigationService.NavigateTo($"/View/{WebUtility.UrlEncode(document.Uid)}", true);
-            }
         }
     }
 }

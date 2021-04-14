@@ -10,22 +10,51 @@
 
 <div class="container fixed">
     <div class="row">
-        <div class="col-12">
+        <div class="col">
             <strong>Search Documents:</strong>
         </div>
     </div>
     <div class="row @(loading ? "loading" : string.Empty)">
         <div class="col">
-            <input @bind-value="searchText"
+            @if (loading)
+            {
+                <p>@text</p>
+            }
+            else
+            {
+                <input @bind-value="text"
                    @bind-value:event="oninput"
+                   @ref="inputElem"
                    autofocus
                    placeholder="Enter search text" />
+            }
         </div>
         <div class="col">
-            <AliasSearch @bind-Alias="Alias"/>
+            @if (@loading)
+            {
+                <p><strong>Alias:</strong>&nbsp;@alias</p>
+            }
+            else
+            {
+                <AliasSearch @bind-Alias="alias"/>
+            }
         </div>
         <div class="col">
-            <TagSearch @bind-Tag="Tag" />
+            @if (loading)
+            {
+                <p><strong>Tag:</strong>&nbsp;@tag</p>
+            }
+            else
+            {
+            <TagSearch @bind-Tag="tag" />
+            }
+        </div>
+        <div class="col">
+            &nbsp;<button class="btn btn-sm btn-success"
+                    @onclick="async () => await SearchAsync()"
+                    disabled="@loading">
+                Search
+            </button>
         </div>
     </div>
     <div class="row">
@@ -98,62 +127,24 @@
 </div>
 
 @code {
-    private bool loading;
+    private bool loading = true;
     private bool navigatingToThisPage = true;
     private bool searchQueued = false;
     private string alias = string.Empty;
     private string tag = string.Empty;
     private string text = string.Empty;
     private List<DocumentSummary> docsList = null;
-
-    private string searchText
-    {
-        get => text;
-        set
-        {
-            var check = value.Trim();
-            if (check != text)
-            {
-                text = check;
-                InvokeAsync(async () => await SearchAsync());
-            }
-        }
-    }
-
-    private string Alias
-    {
-        get => alias;
-        set
-        {
-            if (value != alias)
-            {
-                alias = value;
-                if (!string.IsNullOrWhiteSpace(alias))
-                {
-                    InvokeAsync(SearchAsync);
-                }
-            }
-        }
-    }
-
-    private string Tag
-    {
-        get => tag;
-        set
-        {
-            if (tag != value)
-            {
-                tag = value;
-                if (!string.IsNullOrWhiteSpace(tag))
-                {
-                    InvokeAsync(async () => await SearchAsync());
-                }
-            }
-        }
-    }
+    private ElementReference inputElem;
 
     protected override void OnAfterRender(bool firstRender)
     {
+        var stateHasChanged = false;
+        if (navigatingToThisPage)
+        {
+            loading = false;
+            stateHasChanged = true;
+        }
+
         if (navigatingToThisPage && NavigationService.Uri.IndexOf('?') > 0)
         {
             var queryString = NavigationService.Uri.Split('?');
@@ -169,7 +160,7 @@
                             text = WebUtility.UrlDecode(pair[1]);
                             break;
                         case nameof(alias):
-                            Alias = WebUtility.UrlDecode(pair[1]);
+                            alias = WebUtility.UrlDecode(pair[1]);
                             break;
                         case nameof(tag):
                             tag = WebUtility.UrlDecode(pair[1]);
@@ -179,6 +170,10 @@
             }
             navigatingToThisPage = false;
             InvokeAsync(async () => await SearchAsync());
+        }
+        if (stateHasChanged)
+        {
+            StateHasChanged();
         }
         base.OnAfterRender(firstRender);
     }
@@ -192,6 +187,10 @@
         }
 
         searchQueued = false;
+
+        alias = alias.Trim();
+        tag = tag.Trim();
+        text = text.Trim();
 
         if (!string.IsNullOrEmpty(alias) ||
             !string.IsNullOrEmpty(tag) ||
@@ -229,6 +228,7 @@
             searchParameters.Select(p => $"{p.Item1}={p.Item2}"));
         navigatingToThisPage = false;
         NavigationService.NavigateTo($"/?{queryString}");
+        await inputElem.FocusAsync();
     }
 
     private string SafeUid(string uid) =>

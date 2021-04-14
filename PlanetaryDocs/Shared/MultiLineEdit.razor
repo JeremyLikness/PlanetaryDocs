@@ -1,0 +1,55 @@
+﻿@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<textarea @ref="textArea"
+          rows="10"
+          cols="40">
+</textarea>
+
+@code {
+    private ElementReference textArea;
+    private string id = Guid.NewGuid().ToString();
+    private static Dictionary<string, MultiLineEdit> components
+        = new Dictionary<string, MultiLineEdit>();
+
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public EventCallback<string> TextChanged { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync(
+                "markdownExtensions.setText",
+                id,
+                Text,
+                textArea);
+            components.Add(id, this);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async Task OnUpdateTextAsync(string text)
+    {
+        Text = text;
+        await TextChanged.InvokeAsync(text);
+    }
+
+    [JSInvokable]
+    public static async Task UpdateTextAsync(string id, string text)
+    {
+        var component = components[id];
+        await component.OnUpdateTextAsync(text);
+    }
+
+    public void Dispose()
+    {
+        if (components.ContainsKey(id))
+        {
+            components.Remove(id);
+        }
+    }
+}
