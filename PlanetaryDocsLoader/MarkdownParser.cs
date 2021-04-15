@@ -1,15 +1,26 @@
-﻿using Markdig;
-using PlanetaryDocs.Domain;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Markdig;
+using PlanetaryDocs.Domain;
 
 namespace PlanetaryDocsLoader
 {
+    /// <summary>
+    /// Manages transformation of markdown to HTML.
+    /// </summary>
     public static class MarkdownParser
     {
+        /// <summary>
+        /// Parses a list of files to a list of <see cref="Document"/> instances.
+        /// </summary>
+        /// <param name="filesToParse">The file list.</param>
+        /// <returns>The parsed <see cref="Document"/> list.</returns>
         public static List<Document> ParseFiles(
             IEnumerable<string> filesToParse)
         {
@@ -43,6 +54,7 @@ namespace PlanetaryDocsLoader
                         {
                             metaStart = true;
                         }
+
                         continue;
                     }
 
@@ -67,7 +79,7 @@ namespace PlanetaryDocsLoader
 
                                 case "uid":
                                     uidFound = true;
-                                    doc.Uid = metadata[1].Trim().Replace('/','_');
+                                    doc.Uid = metadata[1].Trim().Replace('/', '_');
                                     Console.WriteLine($"UID:\t{doc.Uid}");
                                     break;
 
@@ -104,6 +116,7 @@ namespace PlanetaryDocsLoader
                                     {
                                         doc.Tags.Add(tag);
                                     }
+
                                     var tagList = string.Join(", ", doc.Tags);
                                     Console.WriteLine($"TAGS:\t{tagList}");
                                     break;
@@ -128,12 +141,14 @@ namespace PlanetaryDocsLoader
                     doc.Markdown = string.Join(Environment.NewLine, markdown);
                     doc.Html = Markdown.ToHtml(doc.Markdown);
                     docsList.Add(doc);
-                    if (doc.Title.Contains("Tutorial")) // hack
+
+                    // hack
+                    if (doc.Title.Contains("Tutorial"))
                     {
                         doc.Title = $"Tutorial: {doc.Description}";
                         if (doc.Title.Length > 60)
                         {
-                            doc.Title = $"{doc.Title.Substring(0, 59)}...";   
+                            doc.Title = $"{doc.Title.Substring(0, 59)}...";
                         }
                     }
                 }

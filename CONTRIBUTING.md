@@ -4,7 +4,7 @@ One of the easiest ways to contribute is to participate in discussions on GitHub
 
 ## General feedback and discussions?
 
-Start a discussion on the [Expression Power Tools issue tracker](https://github.com/JeremyLikness/PlanetaryDocs/issues).
+Start a discussion on the [Planetry Docs issue tracker](https://github.com/JeremyLikness/PlanetaryDocs/issues).
 
 ## Bugs and feature requests?
 

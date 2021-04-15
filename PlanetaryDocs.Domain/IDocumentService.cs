@@ -73,5 +73,20 @@ namespace PlanetaryDocs.Domain
         /// <param name="uid">The unique identifier of the document.</param>
         /// <returns>The document snapshot.</returns>
         Task<Document> LoadDocumentSnapshotAsync(Guid guid, string uid);
+
+        /// <summary>
+        /// Deletes a document.
+        /// </summary>
+        /// <param name="uid">The unique identifier.</param>
+        /// <returns>The asynchronous task.</returns>
+        Task DeleteDocumentAsync(string uid);
+
+        /// <summary>
+        /// Restores a version of the deleted document.
+        /// </summary>
+        /// <param name="id">The id of the audit.</param>
+        /// <param name="uid">The unique identifiers of the document.</param>
+        /// <returns>The restored document.</returns>
+        Task<Document> RestoreDocumentAsync(Guid id, string uid);
     }
 }

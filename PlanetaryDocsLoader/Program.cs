@@ -1,15 +1,25 @@
-﻿using PlanetaryDocs.Domain;
-using PlanetaryDocsLoader;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
+using PlanetaryDocs.Domain;
+using PlanetaryDocsLoader;
 
+// path to repository
 const string DocsPath = @"C:\path\to\aspnetcore.docs";
-const string EndPoint = "<your endpoint>";
-const string AccessKey = "<your key>";
-bool testsOnly = false; // set to true to re-run tests without rebuilding db
 
-if (!Directory.Exists(DocsPath))
+// Azure Cosmos DB endpoint
+const string EndPoint = "https://<youraccount>.documents.azure.com:443/";
+
+// Secret key for Azure Cosmos DB
+const string AccessKey = "<yourkey>";
+
+// set to true to re-run tests without rebuilding db
+bool testsOnly = false;
+
+if (testsOnly == false && !Directory.Exists(DocsPath))
 {
     Console.WriteLine($"Invalid path to docs: {DocsPath}");
     return;
@@ -17,7 +27,7 @@ if (!Directory.Exists(DocsPath))
 
 List<Document> docsList = null;
 
-if (!testsOnly)
+if (testsOnly == false)
 {
     var filesToParse = FileSystemParser.FindCandidateFiles(DocsPath);
     docsList = MarkdownParser.ParseFiles(filesToParse);

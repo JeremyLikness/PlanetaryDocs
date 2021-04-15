@@ -1,20 +1,39 @@
-﻿using Microsoft.Azure.Cosmos;
-using Microsoft.EntityFrameworkCore;
-using PlanetaryDocs.Domain;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
+using Microsoft.EntityFrameworkCore;
+using PlanetaryDocs.Domain;
 
 namespace PlanetaryDocs.DataAccess
 {
+    /// <summary>
+    /// Data access implementation.
+    /// </summary>
     public class DocumentService : IDocumentService
     {
+        /// <summary>
+        /// Factory to generate <see cref="DocsContext"/> instances.
+        /// </summary>
         private readonly IDbContextFactory<DocsContext> factory;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentService"/> class.
+        /// </summary>
+        /// <param name="factory">The factory instance.</param>
         public DocumentService(IDbContextFactory<DocsContext> factory)
             => this.factory = factory;
 
+        /// <summary>
+        /// Add a new document.
+        /// </summary>
+        /// <param name="document">The <see cref="Document"/> to add.</param>
+        /// <returns>An asynchronous <see cref="Task"/>.</returns>
         public async Task InsertDocumentAsync(Document document)
         {
             using var context = factory.CreateDbContext();
@@ -26,6 +45,11 @@ namespace PlanetaryDocs.DataAccess
             await context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Loads a single <see cref="Document"/>.
+        /// </summary>
+        /// <param name="uid">The unique identifier.</param>
+        /// <returns>The <see cref="Document"/>.</returns>
         public async Task<Document> LoadDocumentAsync(string uid)
         {
             using var context = factory.CreateDbContext();
@@ -34,6 +58,13 @@ namespace PlanetaryDocs.DataAccess
                     .SingleOrDefaultAsync(d => d.Uid == uid);
         }
 
+        /// <summary>
+        /// Query to obtain a <see cref="Document"/> list.
+        /// </summary>
+        /// <param name="searchText">Text to look for.</param>
+        /// <param name="authorAlias">Restrict to an author.</param>
+        /// <param name="tag">Restrict to a tag.</param>
+        /// <returns>The matching <see cref="Document"/> list.</returns>
         public async Task<List<DocumentSummary>> QueryDocumentsAsync(
             string searchText,
             string authorAlias,
@@ -113,10 +144,17 @@ namespace PlanetaryDocs.DataAccess
                  .OrderBy(ds => ds.Title).ToList();
         }
 
+        /// <summary>
+        /// Searches author aliases.
+        /// </summary>
+        /// <param name="searchText">Text to search on.</param>
+        /// <returns>The list of matching aliases.</returns>
         public async Task<List<string>> SearchAuthorsAsync(string searchText)
         {
             using var context = factory.CreateDbContext();
+            var partitionKey = DocsContext.ComputePartitionKey<Author>();
             return (await context.Authors
+                .WithPartitionKey(partitionKey)
                 .Select(a => a.Alias)
                 .ToListAsync())
                 .Where(
@@ -125,11 +163,18 @@ namespace PlanetaryDocs.DataAccess
                 .ToList();
         }
 
+        /// <summary>
+        /// Searches tags.
+        /// </summary>
+        /// <param name="searchText">Text to search on.</param>
+        /// <returns>The list of matching tags.</returns>
         public async Task<List<string>> SearchTagsAsync(string searchText)
         {
             using var context = factory.CreateDbContext();
+            var partitionKey = DocsContext.ComputePartitionKey<Tag>();
             var toSearch = searchText.Trim();
             return (await context.Tags
+                .WithPartitionKey(partitionKey)
                 .Select(t => t.TagName)
                 .ToListAsync())
                 .Where(t => t.Contains(
@@ -139,6 +184,11 @@ namespace PlanetaryDocs.DataAccess
                 .ToList();
         }
 
+        /// <summary>
+        /// Updates an existing document.
+        /// </summary>
+        /// <param name="document">The <see cref="Document"/> to update.</param>
+        /// <returns>An asynchronous <see cref="Task"/>.</returns>
         public async Task UpdateDocumentAsync(Document document)
         {
             using var context = factory.CreateDbContext();
@@ -150,6 +200,11 @@ namespace PlanetaryDocs.DataAccess
             await context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Retrieves the audit history of the <see cref="Document"/>.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the <see cref="Document"/>.</param>
+        /// <returns>The list of audit entries.</returns>
         public async Task<List<DocumentAuditSummary>> LoadDocumentHistoryAsync(string uid)
         {
             using var context = factory.CreateDbContext();
@@ -162,6 +217,12 @@ namespace PlanetaryDocs.DataAccess
                 .ToList();
         }
 
+        /// <summary>
+        /// Loads a specific snapshot.
+        /// </summary>
+        /// <param name="guid">The unique identifier of the snapshot.</param>
+        /// <param name="uid">The unique identifier of the document.</param>
+        /// <returns>The document snapshot.</returns>
         public async Task<Document> LoadDocumentSnapshotAsync(System.Guid guid, string uid)
         {
             using var context = factory.CreateDbContext();
@@ -181,6 +242,12 @@ namespace PlanetaryDocs.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the document without tracking for comparisons.
+        /// </summary>
+        /// <param name="context">The <see cref="DocsContext"/>.</param>
+        /// <param name="document">The <see cref="Document"/> to reference.</param>
+        /// <returns>The <see cref="Document"/> instance.</returns>
         private static async Task<Document> LoadDocNoTrackingAsync(
         DocsContext context, Document document) =>
             await context.Documents
@@ -188,13 +255,28 @@ namespace PlanetaryDocs.DataAccess
                 .AsNoTracking()
                 .SingleOrDefaultAsync(d => d.Uid == document.Uid);
 
-        private static async Task HandleMetaAsync(DocsContext context, Document document)
+        /// <summary>
+        /// Keeps tags and authors in sync.
+        /// </summary>
+        /// <param name="context">The <see cref="DocsContext"/>.</param>
+        /// <param name="document">The <see cref="Document"/> to sync.</param>
+        /// <returns>An asynchronous task.</returns>
+        private static async Task HandleMetaAsync(
+            DocsContext context,
+            Document document)
         {
             var authorChanged =
                 await CheckAuthorChangedAsync(context, document);
             await HandleTagsAsync(context, document, authorChanged);
         }
 
+        /// <summary>
+        /// Keeps tags in sync.
+        /// </summary>
+        /// <param name="context">The <see cref="DocsContext"/>.</param>
+        /// <param name="document">The <see cref="Document"/>.</param>
+        /// <param name="authorChanged">A value indicating whether the author was updated.</param>
+        /// <returns>An asynchronous task.</returns>
         private static async Task HandleTagsAsync(
             DocsContext context,
             Document document,
@@ -263,7 +345,7 @@ namespace PlanetaryDocs.DataAccess
                 if (tag == null)
                 {
                     tag = new Tag { TagName = tagAdded };
-                    context.SetPartitionKey(tag, tagAdded);
+                    context.SetPartitionKey(tag);
                     context.Add(tag);
                 }
                 else
@@ -276,6 +358,12 @@ namespace PlanetaryDocs.DataAccess
             }
         }
 
+        /// <summary>
+        /// Handles sync of authors.
+        /// </summary>
+        /// <param name="context">The <see cref="DocsContext"/>.</param>
+        /// <param name="document">The <see cref="Document"/>.</param>
+        /// <returns>A value indicating whether the author changed.</returns>
         private static async Task<bool> CheckAuthorChangedAsync(
             DocsContext context, Document document)
         {
@@ -315,17 +403,63 @@ namespace PlanetaryDocs.DataAccess
                 if (newAuthor == null)
                 {
                     newAuthor = new Author { Alias = document.AuthorAlias };
-                    context.SetPartitionKey(newAuthor, newAuthor.Alias);
+                    context.SetPartitionKey(newAuthor);
                     context.Add(newAuthor);
                 }
                 else
                 {
                     context.Entry(newAuthor).State = EntityState.Modified;
                 }
+
                 newAuthor.Documents.Add(new DocumentSummary(document));
             }
 
             return changed;
+        }
+
+        /// <summary>
+        /// Deletes a document.
+        /// </summary>
+        /// <param name="uid">The unique identifier.</param>
+        /// <returns>The asynchronous task.</returns>
+        public async Task DeleteDocumentAsync(string uid)
+        {
+            using var context = factory.CreateDbContext();
+            var docToDelete = await LoadDocumentAsync(uid);
+            var author = await context.FindMetaAsync<Author>(docToDelete.AuthorAlias);
+            var summary = author.Documents.Where(d => d.Uid == uid).FirstOrDefault();
+            if (summary != null)
+            {
+                author.Documents.Remove(summary);
+                context.Update(author);
+            }
+
+            foreach (var tag in docToDelete.Tags)
+            {
+                var tagEntity = await context.FindMetaAsync<Tag>(tag);
+                var tagSummary = tagEntity.Documents.Where(d => d.Uid == uid).FirstOrDefault();
+                if (tagSummary != null)
+                {
+                    tagEntity.Documents.Remove(tagSummary);
+                    context.Update(tagEntity);
+                }
+            }
+
+            context.Remove(docToDelete);
+            await context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Restores a version of the deleted document.
+        /// </summary>
+        /// <param name="id">The id of the audit.</param>
+        /// <param name="uid">The unique identifiers of the document.</param>
+        /// <returns>The restored document.</returns>
+        public async Task<Document> RestoreDocumentAsync(Guid id, string uid)
+        {
+            var snapshot = await LoadDocumentSnapshotAsync(id, uid);
+            await InsertDocumentAsync(snapshot);
+            return await LoadDocumentAsync(uid);
         }
     }
 }

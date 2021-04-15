@@ -1,11 +1,26 @@
-﻿using System;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace PlanetaryDocsLoader
 {
+    /// <summary>
+    /// Handles recursing the docs repo and parsing markdown files.
+    /// </summary>
     public static class FileSystemParser
     {
+        /// <summary>
+        /// Produces a list of files with the <c>.md</c> markdown extension.
+        /// </summary>
+        /// <param name="docsPath">The path to start.</param>
+        /// <remarks>
+        /// Verbose. Outputs ":" for top level directory, "#" for subdirectories
+        /// found, "!" for markdown files and "-" for skipped.
+        /// </remarks>
+        /// <returns>A unique list of file names.</returns>
         public static HashSet<string> FindCandidateFiles(string docsPath)
         {
             var dirsToVisit = new Stack<string>();
