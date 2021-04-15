@@ -5,9 +5,18 @@
 {
     <div class="container">
         <div class="row">
-            <div class="alert alert-info">
-                Editing document with id '@DocumentToEdit.Uid'
-            </div>
+            @if (Insert)
+            {
+                <div class="alert alert-info">
+                    ➕ Add a new document.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    📝 Edit the document with id '@DocumentToEdit.Uid'.
+                </div>
+            }
         </div>
         @if (validationResults.Any(vr => vr.IsValid == false))
         {
@@ -23,12 +32,28 @@
                 </div>
             </div>
         }
+        @if (Insert)
+        {
+            <div class="row">
+                <div class="col-3 text-right">
+                    Unique ID:
+                </div>
+                <div class="col-9">
+                    <ValidatedInput AutoFocus="@Insert"
+                                    PlaceHolder="Enter the document id"
+                                    @bind-Value="@uid"
+                                    @bind-Validation="@uidValidation"
+                                    Validate="value => ValidationRules.ValidateProperty(nameof(Document.Uid), value)" />
+                </div>
+            </div>
+        }
         <div class="row">
             <div class="col-3 text-right">
                 Title:
             </div>
             <div class="col-9">
-                <ValidatedInput PlaceHolder="Enter the document title"
+                <ValidatedInput AutoFocus="@(!Insert)"
+                                PlaceHolder="Enter the document title"
                                 @bind-Value="@title"
                                 @bind-Validation="@titleValidation"
                                 Validate="value => ValidationRules.ValidateProperty(nameof(Document.Title), value)" />
@@ -49,11 +74,13 @@
             <div class="col-9">
                 @if (existingAlias)
                 {
-                    <AliasSearch @bind-Alias="@alias" />
+                    <AliasSearch @ref="aliasSearch"
+                                 @bind-Alias="@alias" />
                 }
                 else
                 {
-                    <ValidatedInput PlaceHolder="Enter the alias"
+                    <ValidatedInput @ref="newAliasInput"
+                                    PlaceHolder="Enter the alias"
                                     @bind-Value="@alias"
                                     @bind-Validation="@aliasValidation"
                                     Validate="value => ValidationRules.ValidateProperty(nameof(Document.AuthorAlias), value)" />
@@ -96,7 +123,7 @@
                 <MultiLineEdit @bind-Text="@markdown" />
             </div>
             <div class="col-6">
-                <HtmlPreview @ref="preview" Html="@html" />
+                <HtmlPreview @ref="preview" IsEdit="true" Html="@html" />
             </div>
         </div>
     </div>
@@ -106,7 +133,18 @@
     [Parameter]
     public Document DocumentToEdit { get; set; }
 
-    public HtmlPreview preview;
+    private enum FocusElement
+    {
+        None,
+        Alias,
+        Tag
+    }
+
+    private FocusElement elementToFocus = FocusElement.None;
+
+    private HtmlPreview preview;
+    private AliasSearch aliasSearch;
+    private ValidatedInput newAliasInput;
 
     private List<string> tagList
     {
@@ -128,6 +166,19 @@
             if (value != DocumentToEdit.Title)
             {
                 DocumentToEdit.Title = value;
+                ChangeCount++;
+            }
+        }
+    }
+
+    private string uid
+    {
+        get => DocumentToEdit.Uid;
+        set
+        {
+            if (value != DocumentToEdit.Uid)
+            {
+                DocumentToEdit.Uid = value;
                 ChangeCount++;
             }
         }
@@ -181,7 +232,7 @@
             validationResults.Clear();
             validationResults.AddRange(results.Where(r => !r.IsValid));
             ignoreParameterSet = true;
-            OnValidationChange(false);            
+            OnValidationChange(false);
         }
 
         return isValid;
@@ -197,6 +248,9 @@
         : "Choose Existing Alias";
 
     private ValidationResult _aliasValidation =
+        ValidationRules.ValidResult();
+
+    private ValidationResult _uidValidation =
         ValidationRules.ValidResult();
 
     private ValidationResult _titleValidation =
@@ -247,6 +301,16 @@
         }
     }
 
+    private ValidationResult uidValidation
+    {
+        get => _uidValidation;
+        set
+        {
+            _uidValidation = value;
+            OnValidationChange();
+        }
+    }
+
     private ValidationResult markdownValidation
     {
         get => _markdownValidation;
@@ -287,10 +351,29 @@
             return;
         }
 
-        existingAlias = true;
         html = DocumentToEdit.Html;
         OnValidationChange();
+
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (elementToFocus == FocusElement.Alias)
+        {
+            if (existingAlias)
+            {
+                await aliasSearch.FocusAsync();
+            }
+            else
+            {
+                await newAliasInput.FocusAsync();
+            }
+
+            elementToFocus = FocusElement.None;
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void OnValidationChange(bool resetList = true)
@@ -305,7 +388,11 @@
                 _aliasValidation,
                 _descriptionValidation,
                 _markdownValidation
-                    });
+                                });
+            if (Insert)
+            {
+                validationResults.Add(_uidValidation);
+            }
         }
 
         var isValid = validationResults.All(vr => vr.IsValid);
@@ -323,6 +410,7 @@
     {
         DocumentToEdit.AuthorAlias = string.Empty;
         existingAlias = !existingAlias;
+        elementToFocus = FocusElement.Alias;
         await ValidateAliasAsync();
     }
 

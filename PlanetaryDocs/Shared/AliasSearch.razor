@@ -1,12 +1,15 @@
 ﻿@inject IDocumentService DocumentService
 @inject LoadingService LoadingService
 
-<AutoComplete LabelText="Alias:" PlaceHolderText="Type the alias..."
+<AutoComplete @ref="autoComplete"
+              LabelText="Alias:" 
+              PlaceHolderText="Type the alias..."
               @bind-SelectedValue="Alias"
               SearchFn="SearchAsync"/>
 
 @code {
     private string _alias;
+    private AutoComplete autoComplete;
 
     [Parameter]
     public string Alias
@@ -40,4 +43,6 @@
 
         return results;
     }
+
+    public async Task FocusAsync() => await autoComplete.FocusAsync();
 }

@@ -1,4 +1,4 @@
-﻿p:hover {
+﻿p:hover, p.active {
     font-weight: bold;
     cursor: pointer;
 }

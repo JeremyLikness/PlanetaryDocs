@@ -13,7 +13,7 @@
 }
 @if (pickNew)
 {
-    <TagSearch Tag="@NewTag" />
+    <TagSearch @bind-Tag="@NewTag" />
 }
 else
 {

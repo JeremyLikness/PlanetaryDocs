@@ -1,0 +1,48 @@
+﻿@inject HistoryService HistoryService
+@inject NavigationManager NavigationService
+
+<div class="row">
+    <div class="col">
+        <button disabled="@(!IsValid || !IsDirty)"
+                @onclick="async () => await SaveAsync()"
+                class="btn btn-sm btn-success">
+            💾 Save
+        </button>
+        <span class="small">&nbsp;(@ChangeCount changes detected)&nbsp;</span>
+        <button disabled="@(!IsDirty)" class="btn btn-sm btn-warning"
+                @onclick="() => Reset()">
+            🔃 Reset
+        </button>
+        <span>&nbsp;</span>
+        <button class="btn btn-danger btn-sm"
+                @onclick="() => Cancel()">
+            ❌ Cancel
+        </button>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        &nbsp;
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsDirty { get; set; }
+
+    [Parameter]
+    public bool IsValid { get; set; }
+
+    [Parameter]
+    public int ChangeCount { get; set; }
+
+    [Parameter]
+    public Func<Task> SaveAsync { get; set; }
+
+    private void Reset() => NavigationService.NavigateTo(
+        NavigationService.Uri, 
+        true);
+
+    private void Cancel() => InvokeAsync(async () => 
+        await HistoryService.GoBackAsync());
+} 

@@ -62,3 +62,7 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+    .row {
+        padding: 0.2em;
+    }

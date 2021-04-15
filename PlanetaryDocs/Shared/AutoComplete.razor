@@ -3,7 +3,7 @@
         <div class="col-3 text-right">
             @LabelText
         </div>
-        <div class="col-9">
+        <div class="col-9" @onkeydown="HandleKeyDown">
             @if (selected)
             {
                 <a href="#" 
@@ -15,7 +15,8 @@
             }
             else
             {
-                <input @bind-value="Value"
+                <input tabindex="1000"
+                       @bind-value="Value"
                        @ref="inputElem"
                        @bind-value:event="oninput" 
                        placeholder="@PlaceHolderText" />
@@ -24,7 +25,7 @@
             {
                 foreach (var result in values)
                 {
-                    <p @onclick="async ()=>await SetSelectionAsync(result)">@result</p>
+                    <p tabindex="@GetIndex(result)" class="@GetClass(result)" @onclick="async ()=>await SetSelectionAsync(result)">@result</p>
                 }
             }
         </div>
@@ -32,6 +33,7 @@
 </div>
 
 @code {
+    private int index = -1;
     private ElementReference inputElem;
     private bool selected = false;
     private bool loading = false;
@@ -67,6 +69,17 @@
     [Parameter]
     public Func<string, Task<List<string>>> SearchFn { get; set; }
 
+    public async Task FocusAsync() => await inputElem.FocusAsync();
+
+    private string GetClass(string item) =>
+        index >= 0 && item == values[index] ?
+            "active" : string.Empty;
+
+    private string GetIndex(string item) =>
+        values.IndexOf(item) >= 0 ?
+        (values.IndexOf(item) + 1000).ToString() :
+        string.Empty;
+
     protected override async Task OnParametersSetAsync()
     {
         if (!string.IsNullOrWhiteSpace(SelectedValue))
@@ -75,6 +88,37 @@
         }
 
         await base.OnParametersSetAsync();
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        var maxIndex = values != null ?
+            values.Count - 1 : -1;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (index < maxIndex)
+                {
+                    index++;
+                }
+                break;
+
+            case "ArrowUp":
+                if (index > 0)
+                {
+                    index--;
+                }
+                break;
+
+            case "Enter":
+                if (index >= 0)
+                {
+                    InvokeAsync(async () =>
+                    await SetSelectionAsync(values[index]));
+                }
+                break;
+        }
     }
 
     private async Task OnValueChangedAsync()
@@ -95,6 +139,7 @@
         while (queued);
         loading = false;
         await SetSelectionAsync(string.Empty);
+        index = -1;
         StateHasChanged();
     }
 

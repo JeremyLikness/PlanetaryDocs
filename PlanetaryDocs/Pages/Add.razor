@@ -1,0 +1,101 @@
+﻿@page "/Add"
+
+@using System.Net;
+
+@inject NavigationManager NavigationService
+@inject IDocumentService DocumentService
+@inject LoadingService LoadingService
+@inject TitleService TitleService
+
+<div class="container">
+    @if (saving)
+    {
+        <Saving/>
+    }
+    else if (loading)
+    {
+        <Loading/>
+    }
+    else
+    {
+        <EditBar ChangeCount="changeCount"
+                 IsValid="IsValid"
+                 IsDirty="isDirty"
+                 SaveAsync="SaveAsync"/>
+        <div class="row">
+            <div class="col-12">
+                <Editor DocumentToEdit="document"
+                        Insert="true"
+                        @bind-IsValid="IsValid"
+                        @bind-ChangeCount="changeCount"
+                        @ref="editor" />
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    private bool loading = true;
+    private bool saving = false;
+    private Document document = new Document();
+    private bool isValid = false;
+    private int changeCount = 0;
+    private Editor editor;
+
+    public bool IsValid
+    {
+        get => isValid;
+        set
+        {
+            if (value != isValid)
+            {
+                isValid = value;
+                InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private bool isDirty => changeCount > 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await TitleService.SetTitleAsync($"Adding new document");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override void OnInitialized()
+    {
+        document = new Document();
+        changeCount = 0;
+        loading = false;
+        base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            editor.ValidateAll(document);
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    public async Task SaveAsync()
+    {
+        if (!isDirty || !IsValid || !editor.ValidateAll(document))
+        {
+            return;
+        }
+
+        saving = true;
+
+        await LoadingService.WrapExecutionAsync(async () =>
+            await DocumentService.InsertDocumentAsync(document));
+
+        NavigationService.NavigateTo($"/View/{WebUtility.UrlEncode(document.Uid)}", true);
+    }
+}

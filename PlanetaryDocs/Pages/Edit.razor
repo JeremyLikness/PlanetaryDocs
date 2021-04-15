@@ -9,47 +9,30 @@
 @inject TitleService TitleService
 
 <div class="container">
-    @if (saving)
+    @if (notfound)
     {
         <div class="row">
             <div class="col-12">
-                <div class="alert alert-info">
-                    📀 Pushing bits to the cosmos...
+                <div class="alert alert-danger">
+                    ❌ A document with the id '@Uid' was not found. 
                 </div>
             </div>
         </div>
+    }
+    else if (saving)
+    {
+        <Saving />
     }
     else if (loading)
     {
-        <div class="row">
-            <div class="col-12">
-                <div class="alert alert-info">
-                    📀 Parsing the bits...
-                </div>
-            </div>
-        </div>
+        <Loading />
     }
     else
     {
-        <div class="row">
-            <div class="col">
-                <button disabled="@(!IsValid || !isDirty)"
-                        @onclick="async () => await SaveAsync()"
-                        class="btn btn-sm btn-success">
-                    💾 Save
-                </button>
-                <span class="small">&nbsp;(@changeCount changes detected)&nbsp;</span>
-                <button disabled="@(!isDirty)" class="btn btn-sm btn-warning"
-                        @onclick="() => Reset()">
-                    🔃 Reset
-                </button>
-                <span>&nbsp;</span>
-                <button class="btn btn-danger btn-sm"
-                        @onclick="() => Cancel()">
-                    ❌ Cancel
-                </button>
-            </div>
-        </div>
+        <EditBar ChangeCount="changeCount"
+                 IsDirty="isDirty"
+                 IsValid="IsValid"
+                 SaveAsync="SaveAsync" />
         @if (concurrency)
         {
             <div class="row">
@@ -65,7 +48,7 @@
                 <Editor DocumentToEdit="document"
                         @bind-IsValid="IsValid"
                         @bind-ChangeCount="changeCount"
-                        @ref="editor"/>
+                        @ref="editor" />
             </div>
         </div>
     }
@@ -73,6 +56,7 @@
 
 @code {
 
+    private bool notfound = false;
     private bool concurrency = false;
     private bool loading = true;
     private bool saving = false;
@@ -120,20 +104,11 @@
             await LoadingService.WrapExecutionAsync(
                 async () => document =
                 await DocumentService.LoadDocumentAsync(_uid));
+            notfound = document == null;
             changeCount = 0;
             loading = false;
         }
         await base.OnParametersSetAsync();
-    }
-
-    private void Reset()
-    {
-        NavigationService.NavigateTo(NavigationService.Uri, true);
-    }
-
-    private void Cancel()
-    {
-        NavigationService.NavigateTo("/");
     }
 
     public async Task SaveAsync()

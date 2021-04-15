@@ -120,7 +120,7 @@
                 }
                 else if (previewHtml)
                 {
-                    <div class="col-12 web">
+                    <div class="col-12">
                         <HtmlPreview Html="@document.Html" />
                     </div>
                 }
@@ -184,6 +184,7 @@
                     await LoadingService.WrapExecutionAsync(
                         async () => document = await
                             DocumentService.LoadDocumentAsync(_uid));
+                    notFound = document == null;
                     audit = false;
                 }
                 else
@@ -192,6 +193,7 @@
                         async () => document = await
                             DocumentService.LoadDocumentSnapshotAsync(Guid.Parse(history), _uid));
                     audit = true;
+                    notFound = document == null;
                 }
                 loading = false;
                 await TitleService.SetTitleAsync($"Viewing {title}");
@@ -207,7 +209,7 @@
     private void BackToMain()
     {
         NavigationService.NavigateTo(
-            $"/View/{WebUtility.UrlEncode(Uid)}", 
+            $"/View/{WebUtility.UrlEncode(Uid)}",
             true);
     }
 }

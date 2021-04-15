@@ -4,17 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using PlanetaryDocs.DataAccess;
 using PlanetaryDocs.Domain;
+using System;
 
 namespace PlanetaryDocs
 {
     public class Startup
     {
-        // todo: move these to app settings
-        const string EndPoint = "<your endpoint>";
-        const string AccessKey = "<your key>";
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -28,14 +26,24 @@ namespace PlanetaryDocs
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.Configure<CosmosSettings>(
+                Configuration.GetSection(nameof(CosmosSettings)));
             services.AddDbContextFactory<DocsContext>(
-                opts => opts.UseCosmos(
-                    EndPoint,
-                    AccessKey,
-                    nameof(DocsContext)
-                    ));
-            services.AddSingleton<IDocumentService, DocumentService>();
-            services.AddSingleton<LoadingService>();
+               (IServiceProvider sp, DbContextOptionsBuilder opts) =>
+               {
+                   var cosmosSettings = sp
+                       .GetRequiredService<IOptions<CosmosSettings>>()
+                       .Value;
+
+                   opts.UseCosmos(
+                       cosmosSettings.EndPoint,
+                       cosmosSettings.AccessKey,
+                       nameof(DocsContext)
+                       );
+               });
+            services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<LoadingService>();
+            services.AddScoped<HistoryService>();
             services.AddScoped<TitleService>();
         }
 
