@@ -1,0 +1,32 @@
+<Project>
+  
+  <PropertyGroup>
+    <Copyright>(c) Copyright 2021 Jeremy Likness.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Jeremy Likness</Authors>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RepositoryUrl>https://github.com/JeremyLikness/PlanetaryDocs</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Product>Planetary Docs</Product>
+    <UseFullSemVerForNuGet>true</UseFullSemVerForNuGet>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning">
+      <Version>3.4.194</Version>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

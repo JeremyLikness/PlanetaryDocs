@@ -3,6 +3,7 @@
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
+    <br />
 </div>
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
@@ -36,13 +37,29 @@
     </ul>
 </div>
 
+<div class="version">
+    version: @version
+</div>
+
 @code {
     private bool collapseNavMenu = true;
+    private string version = "?";
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override void OnInitialized()
+    {
+        if (version == "?")
+        {
+            version = System.Diagnostics.FileVersionInfo.GetVersionInfo(
+                GetType().Assembly.Location).ProductVersion;
+        }
+
+        base.OnInitialized();
     }
 }

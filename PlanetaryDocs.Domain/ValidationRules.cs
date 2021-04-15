@@ -1,26 +1,67 @@
-﻿using System;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
+using System;
 using System.Linq;
 
 namespace PlanetaryDocs.Domain
 {
+    /// <summary>
+    /// Validation rules for the project.
+    /// </summary>
     public static class ValidationRules
     {
-        const string punctuation = "(),?!'\".";
-        const string uidAllowed = "_.-";
-        const string lowRange = "az";
-        const string highRange = "AZ";
-        const string numbers = "09";
-        
-        public static ValidationResult ValidResult() =>
-            new() { IsValid = true };
+        /// <summary>
+        /// Allowed punctuation.
+        /// </summary>
+        private const string Punctuation = "(),?!'\".";
 
+        /// <summary>
+        /// Punctuation allowed in the unique document identifier.
+        /// </summary>
+        private const string UidAllowed = "_.-";
+
+        /// <summary>
+        /// The low range of alpha.
+        /// </summary>
+        private const string LowRange = "az";
+
+        /// <summary>
+        /// The high range of alpha.
+        /// </summary>
+        private const string HighRange = "AZ";
+
+        /// <summary>
+        /// Numbers range.
+        /// </summary>
+        private const string Numbers = "09";
+
+        /// <summary>
+        /// Generate a valid <see cref="ValidationResult"/>.
+        /// </summary>
+        /// <returns>The <see cref="ValidationResult"/>.</returns>
+        public static ValidationResult ValidResult() =>
+            new () { IsValid = true };
+
+        /// <summary>
+        /// Generate an invalid <see cref="ValidationResult"/>.
+        /// </summary>
+        /// <param name="message">The validation message.</param>
+        /// <returns>The <see cref="ValidationResult"/>.</returns>
         public static ValidationResult InvalidResult(string message) =>
-            new()
+            new ()
             {
                 IsValid = false,
                 Message = message,
             };
 
+        /// <summary>
+        /// Handles multiple results and returns the first invalid result.
+        /// </summary>
+        /// <param name="fieldName">The name of the field.</param>
+        /// <param name="fieldValue">The value.</param>
+        /// <param name="validations">The validations to apply.</param>
+        /// <returns>Either a valid result or the first invalid result.</returns>
         public static ValidationResult CompoundResult(
             string fieldName,
             string fieldValue,
@@ -35,34 +76,54 @@ namespace PlanetaryDocs.Domain
                     return result;
                 }
             }
+
             return result;
         }
 
+        /// <summary>
+        /// Validate that content exists.
+        /// </summary>
+        /// <param name="fieldName">The name of the field.</param>
+        /// <param name="val">The value.</param>
+        /// <returns>The <see cref="ValidationResult"/>.</returns>
         public static ValidationResult IsRequired(
             string fieldName,
             string val) => string.IsNullOrWhiteSpace(val) ?
                 InvalidResult($"{fieldName} is required.")
                 : ValidResult();
 
+        /// <summary>
+        /// Validates only alpha allowed.
+        /// </summary>
+        /// <param name="fieldName">The name of the field.</param>
+        /// <param name="val">The value.</param>
+        /// <returns>The <see cref="ValidationResult"/>.</returns>
         public static ValidationResult IsAlphaOnly(
             string fieldName,
             string val)
         {
-            return val.All(c => (c >= lowRange[0] && c <= lowRange[1])
-            || (c >= highRange[0] && c <= highRange[1])) ?
+            return val.All(c => (c >= LowRange[0] && c <= LowRange[1])
+            || (c >= HighRange[0] && c <= HighRange[1])) ?
                 ValidResult()
                 : InvalidResult($"Field '{fieldName}' contains non-alpha characters.");
         }
 
+        /// <summary>
+        /// Validates allowed alphanumeric and punctuation.
+        /// </summary>
+        /// <param name="fieldName">The name of the field.</param>
+        /// <param name="val">The value.</param>
+        /// <param name="uidCheck">A value indicating whether to restrict punctuation to valid a document id.</param>
+        /// <returns>The <see cref="ValidationResult"/>.</returns>
         public static ValidationResult IsSimpleText(
             string fieldName,
             string val,
             bool uidCheck = false)
         {
             var valid = true;
-            var limits = new[] { lowRange, highRange, numbers };
+            var limits = new[] { LowRange, HighRange, Numbers };
 
-            foreach (var c in val)
+            foreach (var c in val.AsSpan())
             {
                 if (!valid)
                 {
@@ -74,12 +135,12 @@ namespace PlanetaryDocs.Domain
                     continue;
                 }
 
-                if (!uidCheck && punctuation.Contains(c))
+                if (!uidCheck && Punctuation.Contains(c))
                 {
                     continue;
                 }
 
-                if (uidCheck && uidAllowed.Contains(c))
+                if (uidCheck && UidAllowed.Contains(c))
                 {
                     continue;
                 }
@@ -106,47 +167,49 @@ namespace PlanetaryDocs.Domain
                 InvalidResult($"Field '{fieldName}' contains invalid characters.");
         }
 
+        /// <summary>
+        /// Master validation routes based on property name.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>The <see cref="ValidationResult"/>.</returns>
         public static ValidationResult ValidateProperty(
             string name,
             string value)
         {
-            switch (name)
+            return name switch
             {
-                case nameof(Document.AuthorAlias):
-                    return CompoundResult(
-                        name,
-                        value,
-                        IsRequired,
-                        IsAlphaOnly);
+                nameof(Document.AuthorAlias) => CompoundResult(
+                                       name,
+                                       value,
+                                       IsRequired,
+                                       IsAlphaOnly),
 
-                case nameof(Document.Description):
-                    return IsRequired(
-                        name,
-                        value);
+                nameof(Document.Description) => IsRequired(name, value),
 
-                case nameof(Document.Markdown):
-                    return IsRequired(
-                        name,
-                        value);
+                nameof(Document.Markdown) => IsRequired(name, value),
 
-                case nameof(Document.Title):
-                    return CompoundResult(
-                        name,
-                        value,
-                        IsRequired,
-                        (n, v) => IsSimpleText(n, v, false));
+                nameof(Document.Title) => CompoundResult(
+                    name,
+                    value,
+                    IsRequired,
+                    (n, v) => IsSimpleText(n, v, false)),
 
-                case nameof(Document.Uid):
-                    return CompoundResult(
-                        name,
-                        value,
-                        IsRequired,
-                        (n, v) => IsSimpleText(n, v, true));
+                nameof(Document.Uid) => CompoundResult(
+                    name,
+                    value,
+                    IsRequired,
+                    (n, v) => IsSimpleText(n, v, true)),
+
+                _ => InvalidResult("Unknown property."),
             };
-
-            return InvalidResult("Unknown property.");
         }
 
+        /// <summary>
+        /// Validates all fields on the <see cref="Document"/>.
+        /// </summary>
+        /// <param name="doc">The <see cref="Document"/> to validate.</param>
+        /// <returns>The <see cref="ValidationResult"/>.</returns>
         public static ValidationResult[] ValidateDocument(Document doc)
         => doc == null ?
             new[] { InvalidResult("Document cannot be null") }
@@ -156,7 +219,7 @@ namespace PlanetaryDocs.Domain
                 ValidateProperty(nameof(Document.AuthorAlias), doc.AuthorAlias),
                 ValidateProperty(nameof(Document.Description), doc.Description),
                 ValidateProperty(nameof(Document.Markdown), doc.Markdown),
-                ValidateProperty(nameof(Document.Title), doc.Title)
+                ValidateProperty(nameof(Document.Title), doc.Title),
             };
     }
 }
