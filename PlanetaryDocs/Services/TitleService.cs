@@ -2,7 +2,7 @@
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
-namespace PlanetaryDocs
+namespace PlanetaryDocs.Services
 {
     public class TitleService
     {

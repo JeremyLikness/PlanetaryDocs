@@ -6,7 +6,7 @@ namespace PlanetaryDocs.Domain
     /// <summary>
     /// The result of a validation.
     /// </summary>
-    public class ValidationResult
+    public class ValidationState
     {
         /// <summary>
         /// Gets or sets a value indicating whether the property is valid.

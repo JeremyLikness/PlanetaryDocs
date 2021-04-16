@@ -31,7 +31,7 @@
         padding-bottom: 1rem;
     }
 
-    .nav-item a {
+    .nav-item ::deep a {
         color: #d7d7d7;
         border-radius: 4px;
         height: 3rem;
@@ -40,12 +40,12 @@
         line-height: 3rem;
     }
 
-.nav-item a.active {
+.nav-item ::deep a.active {
     background-color: rgba(255,255,255,0.25);
     color: white;
 }
 
-.nav-item a:hover {
+.nav-item ::deep a:hover {
     background-color: rgba(255,255,255,0.1);
     color: white;
 }

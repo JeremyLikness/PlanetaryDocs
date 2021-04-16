@@ -1,175 +1,33 @@
-﻿<div class="container">
-    <div class="row">
-        <div class="col-3 text-right">
-            @LabelText
-        </div>
-        <div class="col-9" @onkeydown="HandleKeyDown">
-            @if (selected)
-            {
-                <a href="#" 
-                   title="@SelectedValue - Click to change"
-                   @onclick="async () => await SetSelectionAsync(string.Empty, true)"
-                   @onclick:preventDefault>
-                    @SelectedValue
-                </a>
-            }
-            else
-            {
-                <input tabindex="1000"
-                       @bind-value="Value"
-                       @ref="inputElem"
-                       @bind-value:event="oninput" 
-                       placeholder="@PlaceHolderText" />
-            }
-            @if (!selected && values != null)
-            {
-                foreach (var result in values)
-                {
-                    <p tabindex="@GetIndex(result)" class="@GetClass(result)" @onclick="async ()=>await SetSelectionAsync(result)">@result</p>
-                }
-            }
-        </div>
-    </div>
+﻿@inherits AutoCompleteBase
+
+<div @onkeydown="HandleKeyDown" @onkeydown:stopPropagation>
+
+    <span class="labelArea">@LabelText</span>
+
+    @if (selected)
+    {
+        <a href="#" 
+            tabindex="@baseIndex"
+            title="@SelectedValue - Click to change"
+            @onclick="async () => await SetSelectionAsync(string.Empty, true)"
+            @onclick:preventDefault>
+            @SelectedValue
+        </a>
+    }
+    else
+    {
+        <input tabindex="@baseIndex"
+                @bind-value="Value"
+                @ref="inputElem"
+                @bind-value:event="oninput" 
+                placeholder="@PlaceHolderText" />
+    }
+
+    @if (!selected && values != null)
+    {
+        foreach (var result in values)
+        {
+            <p tabindex="@GetIndex(result)" class="@GetClass(result)" @onclick="async ()=>await SetSelectionAsync(result)">@result</p>
+        }
+    }
 </div>
-
-@code {
-    private int index = -1;
-    private ElementReference inputElem;
-    private bool selected = false;
-    private bool loading = false;
-    private bool queued = false;
-    private string val = string.Empty;
-    private List<string> values = new List<string>();
-
-    public string Value
-    {
-        get => val;
-        set
-        {
-            if (val != value)
-            {
-                val = value;
-                InvokeAsync(OnValueChangedAsync);
-            }
-        }
-    }
-
-    [Parameter]
-    public string LabelText { get; set; } = string.Empty;
-
-    [Parameter]
-    public string PlaceHolderText { get; set; } = string.Empty;
-
-    [Parameter]
-    public string SelectedValue { get; set; }
-
-    [Parameter]
-    public EventCallback<string> SelectedValueChanged { get; set; }
-
-    [Parameter]
-    public Func<string, Task<List<string>>> SearchFn { get; set; }
-
-    public async Task FocusAsync() => await inputElem.FocusAsync();
-
-    private string GetClass(string item) =>
-        index >= 0 && item == values[index] ?
-            "active" : string.Empty;
-
-    private string GetIndex(string item) =>
-        values.IndexOf(item) >= 0 ?
-        (values.IndexOf(item) + 1000).ToString() :
-        string.Empty;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (!string.IsNullOrWhiteSpace(SelectedValue))
-        {
-            await SetSelectionAsync(SelectedValue);
-        }
-
-        await base.OnParametersSetAsync();
-    }
-
-    private void HandleKeyDown(KeyboardEventArgs e)
-    {
-        var maxIndex = values != null ?
-            values.Count - 1 : -1;
-
-        switch (e.Key)
-        {
-            case "ArrowDown":
-                if (index < maxIndex)
-                {
-                    index++;
-                }
-                break;
-
-            case "ArrowUp":
-                if (index > 0)
-                {
-                    index--;
-                }
-                break;
-
-            case "Enter":
-                if (index >= 0)
-                {
-                    InvokeAsync(async () =>
-                    await SetSelectionAsync(values[index]));
-                }
-                break;
-        }
-    }
-
-    private async Task OnValueChangedAsync()
-    {
-        if (loading)
-        {
-            queued = true;
-            return;
-        }
-
-        loading = true;
-
-        do
-        {
-            queued = false;
-            values = await SearchFn(val);
-        }
-        while (queued);
-        loading = false;
-        await SetSelectionAsync(string.Empty);
-        index = -1;
-        StateHasChanged();
-    }
-
-    private async Task SetSelectionAsync(string selection, bool reset = false)
-    {
-        if (string.IsNullOrWhiteSpace(selection))
-        {
-            if (selected)
-            {
-                selected = false;
-                SelectedValue = string.Empty;
-                await SelectedValueChanged.InvokeAsync(string.Empty);
-                return;
-            }
-        }
-        else
-        {
-            selected = true;
-            values = null;
-            if (SelectedValue != selection)
-            {
-                SelectedValue = selection;
-                await SelectedValueChanged.InvokeAsync(selection);
-            }
-        }
-
-        if (reset)
-        {
-            Value = string.Empty;
-            await inputElem.FocusAsync();
-        }
-    }
-}

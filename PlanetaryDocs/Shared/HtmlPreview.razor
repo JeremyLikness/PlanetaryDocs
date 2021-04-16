@@ -1,52 +1,5 @@
-﻿@inject IJSRuntime JsRuntime
+﻿@inherits HtmlPreviewBase
+
 <div @ref="htmlContainer" class="@webClass">
     &nbsp;
 </div>
-@code {
-    private bool rendered;
-
-    private string html;
-
-    private string webClass => IsEdit ? "webedit" : "web";
-
-    [Parameter]
-    public bool IsEdit { get; set; }
-
-    [Parameter]
-    public string Html
-    {
-        get => html;
-        set
-        {
-            if (value != html)
-            {
-                html = value;
-                InvokeAsync(OnUpdateAsync);
-            }
-        }
-    }
-
-    public ElementReference htmlContainer;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            rendered = true;
-            await OnUpdateAsync();
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
-    public async Task OnUpdateAsync()
-    {
-        if (rendered)
-        {
-            await JsRuntime.InvokeVoidAsync(
-                "markdownExtensions.toHtml",
-                Html,
-                htmlContainer);
-        }
-    }
-}

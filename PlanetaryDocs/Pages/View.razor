@@ -1,16 +1,14 @@
 ﻿@page "/View/{Uid}"
 
-@using System.Net;
-
-@inject IDocumentService DocumentService
-@inject LoadingService LoadingService
-@inject NavigationManager NavigationService
-@inject TitleService TitleService  
+@inherits ViewBase 
 
 <div class="container">
     <div class="row">
         <div class="col-12">
-            <LoadingIndicator />
+            @if (LoadingService.Loading)
+            {
+                <span class="oi oi-reload"></span><span>&nbsp;Loading...</span>
+            }
         </div>
     </div>
     @if (notFound)
@@ -36,7 +34,7 @@
             else
             {
                 <div class="col-2">
-                    <a href="/Edit/@WebUtility.UrlEncode(Uid)"
+                    <a href="/Edit/@SafeUid(Uid)"
                        title="Edit">📝 Edit</a>
                 </div>
                 <div class="col-10">
@@ -133,83 +131,3 @@
         </div>
     }
 </div>
-@code {
-    private bool showHistory = false;
-    private bool previewHtml = false;
-    private bool showMarkdown = true;
-    private string _uid = string.Empty;
-    private bool loading = true;
-    private bool notFound = false;
-    private bool audit = false;
-
-    [Parameter]
-    public string Uid { get; set; }
-
-    private Document document = null;
-
-    private string toggleText => showMarkdown ?
-        "Show HTML" : "Show Markdown";
-
-    private string previewText => previewHtml ?
-        "Show Source" : "Show Preview";
-
-    private string title => audit ? $"[ARCHIVE] {document?.Title}"
-        : document?.Title;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var newUid = WebUtility.UrlDecode(Uid);
-        if (newUid != _uid)
-        {
-            var history = string.Empty;
-            if (NavigationService.Uri.IndexOf('?') > 0)
-            {
-                var parts = NavigationService.Uri.Split('?');
-                var keyValues = parts[1].Split('&');
-                var historyPair = keyValues.FirstOrDefault(kv =>
-                    kv.StartsWith("history="));
-                if (!string.IsNullOrWhiteSpace(historyPair))
-                {
-                    history = historyPair.Split('=')[1];
-                }
-            }
-            loading = false;
-            notFound = false;
-            _uid = newUid;
-            try
-            {
-                loading = true;
-                if (string.IsNullOrWhiteSpace(history))
-                {
-                    await LoadingService.WrapExecutionAsync(
-                        async () => document = await
-                            DocumentService.LoadDocumentAsync(_uid));
-                    notFound = document == null;
-                    audit = false;
-                }
-                else
-                {
-                    await LoadingService.WrapExecutionAsync(
-                        async () => document = await
-                            DocumentService.LoadDocumentSnapshotAsync(Guid.Parse(history), _uid));
-                    audit = true;
-                    notFound = document == null;
-                }
-                loading = false;
-                await TitleService.SetTitleAsync($"Viewing {title}");
-            }
-            catch
-            {
-                notFound = true;
-            }
-        }
-        await base.OnParametersSetAsync();
-    }
-
-    private void BackToMain()
-    {
-        NavigationService.NavigateTo(
-            $"/View/{WebUtility.UrlEncode(Uid)}",
-            true);
-    }
-}

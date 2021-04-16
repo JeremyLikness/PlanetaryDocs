@@ -1,4 +1,6 @@
-﻿@if (Tags != null && Tags.Count > 0)
+﻿@inherits TagPickerBase
+
+@if (Tags != null && Tags.Count > 0)
 {
     foreach (var tag in Tags)
     {
@@ -36,38 +38,3 @@ else
        @onclick="() => NewTag = addTag"
        @onclick:preventDefault>+</a>
 }]
-@code {
-    bool pickNew = false;
-    private string newTag = string.Empty;
-    private string addTag = string.Empty;
-
-    [Parameter]
-    public List<string> Tags { get; set; }
-
-    [Parameter]
-    public EventCallback<List<string>> TagsChanged { get; set; }
-
-    public string NewTag
-    {
-        get => newTag;
-        set
-        {
-            if (!string.IsNullOrWhiteSpace(value) &&
-                !Tags.Contains(value))
-            {
-                Tags.Add(value);
-                newTag = string.Empty;
-                addTag = string.Empty;
-                pickNew = false;
-                InvokeAsync(async () => await TagsChanged.InvokeAsync(
-                    Tags.ToList()));
-            }
-        }
-    }
-
-    public async Task RemoveAsync(string tag)
-    {
-        Tags.Remove(tag);
-        await TagsChanged.InvokeAsync(Tags.ToList());
-    }
-}

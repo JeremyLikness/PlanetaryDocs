@@ -243,6 +243,51 @@ namespace PlanetaryDocs.DataAccess
         }
 
         /// <summary>
+        /// Deletes a document.
+        /// </summary>
+        /// <param name="uid">The unique identifier.</param>
+        /// <returns>The asynchronous task.</returns>
+        public async Task DeleteDocumentAsync(string uid)
+        {
+            using var context = factory.CreateDbContext();
+            var docToDelete = await LoadDocumentAsync(uid);
+            var author = await context.FindMetaAsync<Author>(docToDelete.AuthorAlias);
+            var summary = author.Documents.Where(d => d.Uid == uid).FirstOrDefault();
+            if (summary != null)
+            {
+                author.Documents.Remove(summary);
+                context.Update(author);
+            }
+
+            foreach (var tag in docToDelete.Tags)
+            {
+                var tagEntity = await context.FindMetaAsync<Tag>(tag);
+                var tagSummary = tagEntity.Documents.Where(d => d.Uid == uid).FirstOrDefault();
+                if (tagSummary != null)
+                {
+                    tagEntity.Documents.Remove(tagSummary);
+                    context.Update(tagEntity);
+                }
+            }
+
+            context.Remove(docToDelete);
+            await context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Restores a version of the deleted document.
+        /// </summary>
+        /// <param name="id">The id of the audit.</param>
+        /// <param name="uid">The unique identifiers of the document.</param>
+        /// <returns>The restored document.</returns>
+        public async Task<Document> RestoreDocumentAsync(Guid id, string uid)
+        {
+            var snapshot = await LoadDocumentSnapshotAsync(id, uid);
+            await InsertDocumentAsync(snapshot);
+            return await LoadDocumentAsync(uid);
+        }
+
+        /// <summary>
         /// Gets the document without tracking for comparisons.
         /// </summary>
         /// <param name="context">The <see cref="DocsContext"/>.</param>
@@ -415,51 +460,6 @@ namespace PlanetaryDocs.DataAccess
             }
 
             return changed;
-        }
-
-        /// <summary>
-        /// Deletes a document.
-        /// </summary>
-        /// <param name="uid">The unique identifier.</param>
-        /// <returns>The asynchronous task.</returns>
-        public async Task DeleteDocumentAsync(string uid)
-        {
-            using var context = factory.CreateDbContext();
-            var docToDelete = await LoadDocumentAsync(uid);
-            var author = await context.FindMetaAsync<Author>(docToDelete.AuthorAlias);
-            var summary = author.Documents.Where(d => d.Uid == uid).FirstOrDefault();
-            if (summary != null)
-            {
-                author.Documents.Remove(summary);
-                context.Update(author);
-            }
-
-            foreach (var tag in docToDelete.Tags)
-            {
-                var tagEntity = await context.FindMetaAsync<Tag>(tag);
-                var tagSummary = tagEntity.Documents.Where(d => d.Uid == uid).FirstOrDefault();
-                if (tagSummary != null)
-                {
-                    tagEntity.Documents.Remove(tagSummary);
-                    context.Update(tagEntity);
-                }
-            }
-
-            context.Remove(docToDelete);
-            await context.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Restores a version of the deleted document.
-        /// </summary>
-        /// <param name="id">The id of the audit.</param>
-        /// <param name="uid">The unique identifiers of the document.</param>
-        /// <returns>The restored document.</returns>
-        public async Task<Document> RestoreDocumentAsync(Guid id, string uid)
-        {
-            var snapshot = await LoadDocumentSnapshotAsync(id, uid);
-            await InsertDocumentAsync(snapshot);
-            return await LoadDocumentAsync(uid);
         }
     }
 }

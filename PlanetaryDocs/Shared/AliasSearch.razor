@@ -1,48 +1,8 @@
-﻿@inject IDocumentService DocumentService
-@inject LoadingService LoadingService
+﻿@inherits AliasSearchBase
 
 <AutoComplete @ref="autoComplete"
+              TabIndex="@TabIndex"
               LabelText="Alias:" 
               PlaceHolderText="Type the alias..."
               @bind-SelectedValue="Alias"
               SearchFn="SearchAsync"/>
-
-@code {
-    private string _alias;
-    private AutoComplete autoComplete;
-
-    [Parameter]
-    public string Alias
-    {
-        get => _alias;
-        set
-        {
-            if (value != _alias)
-            {
-                _alias = value;
-                InvokeAsync(async () => await AliasChanged.InvokeAsync(_alias));
-            }
-        }
-    }
-
-    [Parameter]
-    public EventCallback<string> AliasChanged { get; set; }
-
-    public async Task<List<string>> SearchAsync(string searchText)
-    {
-        List<string> results = null;
-
-        if (string.IsNullOrWhiteSpace(searchText))
-        {
-            return results;
-        }
-
-        await LoadingService.WrapExecutionAsync(
-            async () => results =
-            await DocumentService.SearchAuthorsAsync(searchText));
-
-        return results;
-    }
-
-    public async Task FocusAsync() => await autoComplete.FocusAsync();
-}

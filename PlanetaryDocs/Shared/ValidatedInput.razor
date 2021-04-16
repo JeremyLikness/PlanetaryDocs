@@ -1,4 +1,6 @@
-﻿<div class="container">
+﻿@inherits ValidatedInputBase
+
+<div class="container">
     <div class="row">
         <div class="col-12">
             @if (UseTextArea)
@@ -30,98 +32,3 @@
         </div>
     }
 </div>
-
-@code {
-    private bool focused = false;
-    private ElementReference textAreaControl;
-    private ElementReference inputControl;
-    private ElementReference activeControl =>
-        UseTextArea ? textAreaControl : inputControl;
-    private string _originalValue = string.Empty;
-    private string _value = string.Empty;
-    private string error => Validation != null && Validation.IsValid == false
-        ? "error" : string.Empty;
-
-    [Parameter]
-    public string PlaceHolder { get; set; }
-
-    [Parameter]
-    public string Value { get; set; }
-
-    [Parameter]
-    public bool AutoFocus { get; set; }
-
-    [Parameter]
-    public EventCallback<string> ValueChanged { get; set; }
-
-    [Parameter]
-    public Func<string, ValidationResult> Validate { get; set; }
-
-    [Parameter]
-    public ValidationResult Validation { get; set; }
-
-    [Parameter]
-    public EventCallback<ValidationResult> ValidationChanged { get; set; }
-
-    [Parameter]
-    public bool UseTextArea { get; set; }
-
-    private string value
-    {
-        get => _value;
-        set
-        {
-            if (value != _value)
-            {
-                _value = value;
-                Value = _value;
-                InvokeAsync(async () =>
-                    await ValueChanged.InvokeAsync(Value));
-                OnValidate();
-            }
-        }
-    }
-
-    private ValidationResult validationResult;
-
-    protected override void OnParametersSet()
-    {
-        validationResult = null;
-        _originalValue = Value;
-        _value = Value;
-        OnValidate();
-        base.OnParametersSet();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (AutoFocus && !focused)
-        {
-            focused = true;
-            await activeControl.FocusAsync();
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
-    public void OnValidate()
-    {
-        validationResult = Validate(_value);
-
-        if (Validation == null ||
-            validationResult.IsValid != Validation.IsValid ||
-            validationResult.Message != Validation.Message)
-        {
-            Validation = validationResult;
-            InvokeAsync(async () =>
-                await ValidationChanged.InvokeAsync(Validation));
-        }
-
-        if (!validationResult.IsValid && AutoFocus)
-        {
-            InvokeAsync(async () => await activeControl.FocusAsync());
-        }
-    }
-
-    public async Task FocusAsync() => await activeControl.FocusAsync();
-}

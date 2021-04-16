@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@inject LoadingService LoadingService
+
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
@@ -6,8 +8,10 @@
     </div>
 
     <div class="main">
-        <div class="content px-4">
-            @Body
-        </div>
+        <CascadingValue Value="LoadingService">
+            <div class="content px-4">
+                @Body
+            </div>
+        </CascadingValue>
     </div>
 </div>

@@ -1,43 +1,7 @@
-﻿@inject IDocumentService DocumentService
-@inject LoadingService LoadingService
+﻿@inherits TagSearchBase
 
-<AutoComplete LabelText="Tag:" PlaceHolderText="Type the tag..."
+<AutoComplete TabIndex="@TabIndex"
+              LabelText="Tag:" 
+              PlaceHolderText="Type the tag..."
               @bind-SelectedValue="Tag"
               SearchFn="SearchAsync" />
-
-@code {
-    private string _tag;
-
-    [Parameter]
-    public string Tag
-    {
-        get => _tag;
-        set
-        {
-            if (value != _tag)
-            {
-                _tag = value;
-                InvokeAsync(async () => await TagChanged.InvokeAsync(_tag));
-            }
-        }
-    }
-
-    [Parameter]
-    public EventCallback<string> TagChanged { get; set; }
-
-    public async Task<List<string>> SearchAsync(string searchText)
-    {
-        List<string> results = null;
-
-        if (string.IsNullOrWhiteSpace(searchText))
-        {
-            return results;
-        }
-
-        await LoadingService.WrapExecutionAsync(
-            async () => results =
-            await DocumentService.SearchTagsAsync(searchText));
-
-        return results;
-    }
-}

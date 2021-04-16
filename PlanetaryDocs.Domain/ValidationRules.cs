@@ -37,18 +37,18 @@ namespace PlanetaryDocs.Domain
         private const string Numbers = "09";
 
         /// <summary>
-        /// Generate a valid <see cref="ValidationResult"/>.
+        /// Generate a valid <see cref="ValidationState"/>.
         /// </summary>
-        /// <returns>The <see cref="ValidationResult"/>.</returns>
-        public static ValidationResult ValidResult() =>
+        /// <returns>The <see cref="ValidationState"/>.</returns>
+        public static ValidationState ValidResult() =>
             new () { IsValid = true };
 
         /// <summary>
-        /// Generate an invalid <see cref="ValidationResult"/>.
+        /// Generate an invalid <see cref="ValidationState"/>.
         /// </summary>
         /// <param name="message">The validation message.</param>
-        /// <returns>The <see cref="ValidationResult"/>.</returns>
-        public static ValidationResult InvalidResult(string message) =>
+        /// <returns>The <see cref="ValidationState"/>.</returns>
+        public static ValidationState InvalidResult(string message) =>
             new ()
             {
                 IsValid = false,
@@ -62,10 +62,10 @@ namespace PlanetaryDocs.Domain
         /// <param name="fieldValue">The value.</param>
         /// <param name="validations">The validations to apply.</param>
         /// <returns>Either a valid result or the first invalid result.</returns>
-        public static ValidationResult CompoundResult(
+        public static ValidationState CompoundResult(
             string fieldName,
             string fieldValue,
-            params Func<string, string, ValidationResult>[] validations)
+            params Func<string, string, ValidationState>[] validations)
         {
             var result = ValidResult();
             foreach (var validation in validations)
@@ -85,8 +85,8 @@ namespace PlanetaryDocs.Domain
         /// </summary>
         /// <param name="fieldName">The name of the field.</param>
         /// <param name="val">The value.</param>
-        /// <returns>The <see cref="ValidationResult"/>.</returns>
-        public static ValidationResult IsRequired(
+        /// <returns>The <see cref="ValidationState"/>.</returns>
+        public static ValidationState IsRequired(
             string fieldName,
             string val) => string.IsNullOrWhiteSpace(val) ?
                 InvalidResult($"{fieldName} is required.")
@@ -97,8 +97,8 @@ namespace PlanetaryDocs.Domain
         /// </summary>
         /// <param name="fieldName">The name of the field.</param>
         /// <param name="val">The value.</param>
-        /// <returns>The <see cref="ValidationResult"/>.</returns>
-        public static ValidationResult IsAlphaOnly(
+        /// <returns>The <see cref="ValidationState"/>.</returns>
+        public static ValidationState IsAlphaOnly(
             string fieldName,
             string val)
         {
@@ -114,8 +114,8 @@ namespace PlanetaryDocs.Domain
         /// <param name="fieldName">The name of the field.</param>
         /// <param name="val">The value.</param>
         /// <param name="uidCheck">A value indicating whether to restrict punctuation to valid a document id.</param>
-        /// <returns>The <see cref="ValidationResult"/>.</returns>
-        public static ValidationResult IsSimpleText(
+        /// <returns>The <see cref="ValidationState"/>.</returns>
+        public static ValidationState IsSimpleText(
             string fieldName,
             string val,
             bool uidCheck = false)
@@ -172,8 +172,8 @@ namespace PlanetaryDocs.Domain
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="value">The value.</param>
-        /// <returns>The <see cref="ValidationResult"/>.</returns>
-        public static ValidationResult ValidateProperty(
+        /// <returns>The <see cref="ValidationState"/>.</returns>
+        public static ValidationState ValidateProperty(
             string name,
             string value)
         {
@@ -209,8 +209,8 @@ namespace PlanetaryDocs.Domain
         /// Validates all fields on the <see cref="Document"/>.
         /// </summary>
         /// <param name="doc">The <see cref="Document"/> to validate.</param>
-        /// <returns>The <see cref="ValidationResult"/>.</returns>
-        public static ValidationResult[] ValidateDocument(Document doc)
+        /// <returns>The <see cref="ValidationState"/>.</returns>
+        public static ValidationState[] ValidateDocument(Document doc)
         => doc == null ?
             new[] { InvalidResult("Document cannot be null") }
             : new[]

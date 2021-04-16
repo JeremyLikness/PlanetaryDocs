@@ -1,58 +1,57 @@
 ﻿@page "/"
 
-@using System.Net;
-
-@inject IDocumentService DocumentService
-@inject LoadingService LoadingService
-@inject NavigationManager NavigationService
-
-<h1>Planetary Docs <LoadingIndicator /></h1>
-
+@inherits IndexBase
+  
+<h1>Planetary Docs</h1>
 <div class="container fixed">
     <div class="row">
         <div class="col">
             <strong>Search Documents:</strong>
         </div>
     </div>
-    <div class="row @(loading ? "loading" : string.Empty)">
-        <div class="col">
+    <div class="row @(loading ? "loading" : string.Empty)"
+         @onkeypress="HandleKeyPress">
+        <div class="col-4">
             @if (loading)
             {
                 <p>@text</p>
             }
             else
             {
-                <input @bind-value="text"
+                <input 
+                       tabindex="100"
+                       @bind-value="text"
                    @bind-value:event="oninput"
                    @ref="inputElem"
                    autofocus
                    placeholder="Enter search text" />
             }
         </div>
-        <div class="col">
+        <div class="col-3">
             @if (@loading)
             {
                 <p><strong>Alias:</strong>&nbsp;@alias</p>
             }
             else
             {
-                <AliasSearch @bind-Alias="alias"/>
+                <AliasSearch TabIndex="200" @bind-Alias="alias"/>
             }
         </div>
-        <div class="col">
+        <div class="col-3">
             @if (loading)
             {
                 <p><strong>Tag:</strong>&nbsp;@tag</p>
             }
             else
             {
-            <TagSearch @bind-Tag="tag" />
+            <TagSearch TabIndex="300" @bind-Tag="tag" />
             }
         </div>
-        <div class="col">
-            &nbsp;<button class="btn btn-sm btn-success"
+        <div class="col-2">
+            &nbsp;<button tabindex="400"
+                          class="btn btn-sm btn-success"
                     @onclick="async () => await SearchAsync()"
-                    disabled="@loading">
+                    disabled="@(!CanSearch)">
                 Search
             </button>
         </div>
@@ -77,15 +76,18 @@
                         <div class="alert alert-info">
                             @if (docsList.Count < 1)
                             {
-                                <span>No documents found.</span>
+                                <span class="oi oi-circle-x"></span>
+                                <span>&nbsp;No documents found.</span>
                             }
                             @if (docsList.Count == 1)
                             {
-                                <span>One document found.</span>
+                                <span class="oi oi-circle-check"></span>
+                                <span>&nbsp;One document found.</span>
                             }
                             @if (docsList.Count > 1)
                             {
-                                <span>@docsList.Count documents found.</span>
+                                <span class="oi oi-circle-check"></span>
+                                <span>&nbsp;@docsList.Count documents found.</span>
                             }
                         </div>
                     </div>
@@ -103,14 +105,14 @@
                 </div>
                 foreach (var doc in docsList)
                 {
-                    <div class="row result">
+                    <div @key="doc.Uid" class="row result">
                         <div class="col-2">
                             <a title="Edit document" href="/Edit/@(SafeUid(doc.Uid))">
-                                📝
+                                <span class="oi oi-pencil">&nbsp;</span>
                             </a>
                             &nbsp;
                             <a title="View document" href="/View/@(SafeUid(doc.Uid))">
-                                👁
+                                <span class="oi oi-eye">&nbsp;</span>
                             </a>
                         </div>
                         <div class="col-4 clickable" @onclick="() => Navigate(doc.Uid)">
@@ -125,118 +127,3 @@
         </div>
     </div>
 </div>
-
-@code {
-    private bool loading = true;
-    private bool navigatingToThisPage = true;
-    private bool searchQueued = false;
-    private string alias = string.Empty;
-    private string tag = string.Empty;
-    private string text = string.Empty;
-    private List<DocumentSummary> docsList = null;
-    private ElementReference inputElem;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        var stateHasChanged = false;
-        if (navigatingToThisPage)
-        {
-            loading = false;
-            stateHasChanged = true;
-        }
-
-        if (navigatingToThisPage && NavigationService.Uri.IndexOf('?') > 0)
-        {
-            var queryString = NavigationService.Uri.Split('?');
-            var keyValuePairs = queryString[1].Split('&');
-            foreach (var keyValuePair in keyValuePairs)
-            {
-                if (keyValuePair.IndexOf('=') > 0)
-                {
-                    var pair = keyValuePair.Split('=');
-                    switch (pair[0])
-                    {
-                        case nameof(text):
-                            text = WebUtility.UrlDecode(pair[1]);
-                            break;
-                        case nameof(alias):
-                            alias = WebUtility.UrlDecode(pair[1]);
-                            break;
-                        case nameof(tag):
-                            tag = WebUtility.UrlDecode(pair[1]);
-                            break;
-                    }
-                }
-            }
-            navigatingToThisPage = false;
-            InvokeAsync(async () => await SearchAsync());
-        }
-        if (stateHasChanged)
-        {
-            StateHasChanged();
-        }
-        base.OnAfterRender(firstRender);
-    }
-
-    private async Task SearchAsync()
-    {
-        if (loading)
-        {
-            searchQueued = true;
-            return;
-        }
-
-        searchQueued = false;
-
-        alias = alias.Trim();
-        tag = tag.Trim();
-        text = text.Trim();
-
-        if (!string.IsNullOrEmpty(alias) ||
-            !string.IsNullOrEmpty(tag) ||
-            (!string.IsNullOrEmpty(text) && text.Length > 2))
-        {
-            loading = true;
-            do
-            {
-                searchQueued = false;
-                await LoadingService.WrapExecutionAsync(
-                    async () =>
-                docsList = await DocumentService.QueryDocumentsAsync(
-                    text,
-                    alias,
-                    tag));
-            }
-            while (searchQueued);
-            loading = false;
-        }
-        else
-        {
-            docsList = null;
-        }
-
-        StateHasChanged();
-
-        var searchParameters = new[]
-        {
-            ((nameof(text), WebUtility.UrlEncode(text))),
-            ((nameof(alias), WebUtility.UrlEncode(alias))),
-            ((nameof(tag), WebUtility.UrlEncode(tag)))
-        };
-        var queryString =
-            string.Join('&',
-            searchParameters.Select(p => $"{p.Item1}={p.Item2}"));
-        navigatingToThisPage = false;
-        NavigationService.NavigateTo($"/?{queryString}");
-        await inputElem.FocusAsync();
-    }
-
-    private string SafeUid(string uid) =>
-        WebUtility.UrlEncode(uid);
-
-    private void Navigate(string uid)
-    {
-        navigatingToThisPage = false;
-        NavigationService.NavigateTo($"/View/{SafeUid(uid)}");
-    }
-}

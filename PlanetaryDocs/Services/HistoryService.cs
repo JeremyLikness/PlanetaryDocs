@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace PlanetaryDocs
+namespace PlanetaryDocs.Services
 {
     public class HistoryService
     {
@@ -18,6 +14,5 @@ namespace PlanetaryDocs
         }
 
         public ValueTask GoBackAsync() => goBack();
-        
     }
 }

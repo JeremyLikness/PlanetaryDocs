@@ -5,6 +5,10 @@
     overflow-x: hidden;
 }
 
+.result {
+    border-top: solid 1px cyan;
+}
+
 .result:hover {
     background-color: lightgray;
 }

@@ -1,5 +1,4 @@
-﻿@inject IDocumentService DocumentService
-@inject LoadingService LoadingService
+﻿@inherits EditorBase
 
 @if (DocumentToEdit != null)
 {
@@ -8,25 +7,25 @@
             @if (Insert)
             {
                 <div class="alert alert-info">
-                    ➕ Add a new document.
+                    <span class="oi oi-plus"></span>&nbsp;Add a new document.
                 </div>
             }
             else
             {
                 <div class="alert alert-info">
-                    📝 Edit the document with id '@DocumentToEdit.Uid'.
+                    <span class="oi oi-pencile"></span>&nbsp;Edit the document with id '@DocumentToEdit.Uid'.
                 </div>
             }
         </div>
-        @if (validationResults.Any(vr => vr.IsValid == false))
+        @if (ValidationStates.Any(vr => vr.IsValid == false))
         {
             <div class="row">
                 <div class="col-12">
                     <ul>
-                        @foreach (var vr in validationResults.Where
+                        @foreach (var vr in ValidationStates.Where
 (v => v.IsValid == false))
                         {
-                            <li>⚠ @vr.Message</li>
+                            <li><span class="oi oi-warning"></span>&nbsp;@vr.Message</li>
                         }
                     </ul>
                 </div>
@@ -35,10 +34,12 @@
         @if (Insert)
         {
             <div class="row">
-                <div class="col-3 text-right">
+                <div class="col-12 text-left">
                     Unique ID:
                 </div>
-                <div class="col-9">
+            </div>
+            <div class="row">
+                <div class="col-12">
                     <ValidatedInput AutoFocus="@Insert"
                                     PlaceHolder="Enter the document id"
                                     @bind-Value="@uid"
@@ -48,10 +49,12 @@
             </div>
         }
         <div class="row">
-            <div class="col-3 text-right">
+            <div class="col-12 field-label">
                 Title:
             </div>
-            <div class="col-9">
+        </div>
+        <div class="row">
+            <div class="col-12">
                 <ValidatedInput AutoFocus="@(!Insert)"
                                 PlaceHolder="Enter the document title"
                                 @bind-Value="@title"
@@ -60,18 +63,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-3 text-right">
-                <a href="#"
-                   @onclick="async () => await ToggleAliasAsync()"
-                   @onclick:preventDefault>
-                    @aliasButton
-                </a>&nbsp;
-                @if (!existingAlias)
-                {
-                    <span>Enter new alias:</span>
-                }
-            </div>
-            <div class="col-9">
+            <div class="col-12">
                 @if (existingAlias)
                 {
                     <AliasSearch @ref="aliasSearch"
@@ -79,27 +71,33 @@
                 }
                 else
                 {
+                    <span>Enter new alias:&nbsp;</span>
                     <ValidatedInput @ref="newAliasInput"
                                     PlaceHolder="Enter the alias"
                                     @bind-Value="@alias"
                                     @bind-Validation="@aliasValidation"
                                     Validate="value => ValidationRules.ValidateProperty(nameof(Document.AuthorAlias), value)" />
                 }
+                <a href="#"
+                   @onclick="async () => await ToggleAliasAsync()"
+                   @onclick:preventDefault>
+                    @aliasButton
+                </a>&nbsp;
             </div>
         </div>
         <div class="row">
-            <div class="col-3 text-right">
-                Choose tags:
-            </div>
-            <div class="col-9">
+            <div class="col-12">
+                <span class="field-label">Choose tags:</span>&nbsp;
                 <TagPicker @bind-Tags="@tagList" />
             </div>
         </div>
         <div class="row">
-            <div class="col-3 text-right">
+            <div class="col-12 field-label">
                 Description:
             </div>
-            <div class="col-9">
+        </div>
+        <div class="row">
+            <div class="col-12">
                 <ValidatedInput PlaceHolder="Enter the description"
                                 @bind-Value="@description"
                                 @bind-Validation="@descriptionValidation"
@@ -107,19 +105,19 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-6 text-center">
-                <strong>Markdown</strong>
+            <div class="col-5 field-label">
+                Markdown:
             </div>
-            <div class="col-6 text-center">
-                <strong>Preview</strong>&nbsp;
+            <div class="col-6 field-label">
+                Preview:&nbsp;
                 <button class="btn btn-link btn-sm"
                         @onclick="() => MarkdownPreview()">
-                    🔎Refresh preview
+                    <span class="oi oi-reload"></span>&nbsp;Refresh preview
                 </button>
             </div>
         </div>
         <div class="row">
-            <div class="col-6">
+            <div class="col-5">
                 <MultiLineEdit @bind-Text="@markdown" />
             </div>
             <div class="col-6">
@@ -127,357 +125,4 @@
             </div>
         </div>
     </div>
-}
-
-@code {
-    [Parameter]
-    public Document DocumentToEdit { get; set; }
-
-    private enum FocusElement
-    {
-        None,
-        Alias,
-        Tag
-    }
-
-    private FocusElement elementToFocus = FocusElement.None;
-
-    private HtmlPreview preview;
-    private AliasSearch aliasSearch;
-    private ValidatedInput newAliasInput;
-
-    private List<string> tagList
-    {
-        get => DocumentToEdit.Tags;
-        set
-        {
-            DocumentToEdit.Tags.Clear();
-            DocumentToEdit.Tags.AddRange(value);
-            ChangeCount++;
-            StateHasChanged();
-        }
-    }
-
-    private string title
-    {
-        get => DocumentToEdit.Title;
-        set
-        {
-            if (value != DocumentToEdit.Title)
-            {
-                DocumentToEdit.Title = value;
-                ChangeCount++;
-            }
-        }
-    }
-
-    private string uid
-    {
-        get => DocumentToEdit.Uid;
-        set
-        {
-            if (value != DocumentToEdit.Uid)
-            {
-                DocumentToEdit.Uid = value;
-                ChangeCount++;
-            }
-        }
-    }
-
-    private string description
-    {
-        get => DocumentToEdit.Description;
-        set
-        {
-            if (value != DocumentToEdit.Description)
-            {
-                DocumentToEdit.Description = value;
-                ChangeCount++;
-            }
-        }
-    }
-
-    [Parameter]
-    public bool Insert { get; set; }
-
-    [Parameter]
-    public bool IsValid { get; set; }
-
-    [Parameter]
-    public int ChangeCount
-    {
-        get => changeCount;
-        set
-        {
-            if (value != changeCount)
-            {
-                changeCount = value;
-                InvokeAsync(async () => await ChangeCountChanged.InvokeAsync(changeCount));
-            }
-        }
-    }
-
-    [Parameter]
-    public EventCallback<int> ChangeCountChanged { get; set; }
-
-    [Parameter]
-    public EventCallback<bool> IsValidChanged { get; set; }
-
-    public bool ValidateAll(Document document)
-    {
-        var results = ValidationRules.ValidateDocument(document);
-        var isValid = results.All(r => r.IsValid);
-        if (isValid != IsValid)
-        {
-            validationResults.Clear();
-            validationResults.AddRange(results.Where(r => !r.IsValid));
-            ignoreParameterSet = true;
-            OnValidationChange(false);
-        }
-
-        return isValid;
-    }
-
-    private List<ValidationResult> validationResults =
-        new List<ValidationResult>();
-
-    private int changeCount;
-
-    private bool existingAlias = true;
-    private string aliasButton => existingAlias ? "Add New Alias"
-        : "Choose Existing Alias";
-
-    private ValidationResult _aliasValidation =
-        ValidationRules.ValidResult();
-
-    private ValidationResult _uidValidation =
-        ValidationRules.ValidResult();
-
-    private ValidationResult _titleValidation =
-        ValidationRules.ValidResult();
-
-    private ValidationResult _descriptionValidation =
-        ValidationRules.ValidResult();
-
-    private ValidationResult _markdownValidation =
-        ValidationRules.ValidResult();
-
-    private string html;
-
-    private string markdown
-    {
-        get => DocumentToEdit.Markdown;
-        set
-        {
-            if (value != DocumentToEdit.Markdown)
-            {
-                DocumentToEdit.Markdown = value;
-                MarkdownUpdated();
-            }
-        }
-    }
-
-    private string alias
-    {
-        get => DocumentToEdit.AuthorAlias;
-        set
-        {
-            if (value != DocumentToEdit.AuthorAlias)
-            {
-                DocumentToEdit.AuthorAlias = value;
-                ChangeCount++;
-                InvokeAsync(ValidateAliasAsync);
-            }
-        }
-    }
-
-    private ValidationResult titleValidation
-    {
-        get => _titleValidation;
-        set
-        {
-            _titleValidation = value;
-            OnValidationChange();
-        }
-    }
-
-    private ValidationResult uidValidation
-    {
-        get => _uidValidation;
-        set
-        {
-            _uidValidation = value;
-            OnValidationChange();
-        }
-    }
-
-    private ValidationResult markdownValidation
-    {
-        get => _markdownValidation;
-        set
-        {
-            _markdownValidation = value;
-            OnValidationChange();
-        }
-    }
-
-    private ValidationResult descriptionValidation
-    {
-        get => _descriptionValidation;
-        set
-        {
-            _descriptionValidation = value;
-            OnValidationChange();
-        }
-    }
-
-    private ValidationResult aliasValidation
-    {
-        get => _aliasValidation;
-        set
-        {
-            _aliasValidation = value;
-            OnValidationChange();
-        }
-    }
-
-    private bool ignoreParameterSet = false;
-
-    protected override void OnParametersSet()
-    {
-        if (ignoreParameterSet)
-        {
-            ignoreParameterSet = false;
-            return;
-        }
-
-        html = DocumentToEdit.Html;
-        OnValidationChange();
-
-        base.OnParametersSet();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (elementToFocus == FocusElement.Alias)
-        {
-            if (existingAlias)
-            {
-                await aliasSearch.FocusAsync();
-            }
-            else
-            {
-                await newAliasInput.FocusAsync();
-            }
-
-            elementToFocus = FocusElement.None;
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
-    private void OnValidationChange(bool resetList = true)
-    {
-        if (resetList)
-        {
-            validationResults.Clear();
-            validationResults.AddRange(
-                new[]
-                {
-                _titleValidation,
-                _aliasValidation,
-                _descriptionValidation,
-                _markdownValidation
-                                });
-            if (Insert)
-            {
-                validationResults.Add(_uidValidation);
-            }
-        }
-
-        var isValid = validationResults.All(vr => vr.IsValid);
-
-        if (isValid != IsValid)
-        {
-            IsValid = isValid;
-            InvokeAsync(
-                async () =>
-                await IsValidChanged.InvokeAsync(isValid));
-        }
-    }
-
-    private async Task ToggleAliasAsync()
-    {
-        DocumentToEdit.AuthorAlias = string.Empty;
-        existingAlias = !existingAlias;
-        elementToFocus = FocusElement.Alias;
-        await ValidateAliasAsync();
-    }
-
-    private async Task ValidateAliasAsync()
-    {
-        _aliasValidation = ValidationRules.ValidateProperty(
-            nameof(Document.AuthorAlias),
-            existingAlias ? alias : DocumentToEdit.AuthorAlias);
-
-        if (!existingAlias && _aliasValidation.IsValid)
-        {
-            var aliasToCheck = DocumentToEdit.AuthorAlias;
-            List<string> aliases = null;
-
-            await LoadingService.WrapExecutionAsync(
-                async () =>
-                    aliases = await DocumentService.SearchAuthorsAsync(
-                aliasToCheck));
-            if (aliases.Any(a => a == aliasToCheck))
-            {
-                _aliasValidation = new ValidationResult
-                {
-                    IsValid = false,
-                    Message = $"Alias '{aliasToCheck}' already exists."
-                };
-            }
-        }
-        OnValidationChange();
-    }
-
-    private void MarkdownUpdated()
-    {
-        ChangeCount++;
-
-        var checkRequired = ValidationRules.ValidateProperty(
-            nameof(DocumentToEdit.Markdown), DocumentToEdit.Markdown);
-
-        if (checkRequired.IsValid)
-        {
-            markdownValidation = ValidationRules.InvalidResult(
-                    "Markdown has changed. Preview before saving.");
-        }
-        else if (_markdownValidation.IsValid != checkRequired.IsValid ||
-                _markdownValidation.Message != checkRequired.Message)
-        {
-            markdownValidation = checkRequired;
-        }
-        OnValidationChange();
-    }
-
-    private void MarkdownPreview()
-    {
-        if (string.IsNullOrWhiteSpace(markdown))
-        {
-            html = string.Empty;
-            DocumentToEdit.Html = string.Empty;
-            InvokeAsync(preview.OnUpdateAsync);
-            return;
-        }
-
-        html = Markdig.Markdown.ToHtml(DocumentToEdit.Markdown);
-        DocumentToEdit.Html = html;
-
-        InvokeAsync(preview.OnUpdateAsync);
-
-        markdownValidation = ValidationRules.ValidResult();
-
-        OnValidationChange();
-    }
 }

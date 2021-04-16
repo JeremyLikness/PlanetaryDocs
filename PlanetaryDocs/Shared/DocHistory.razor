@@ -1,8 +1,4 @@
-﻿@inject NavigationManager NavigationService
-@inject LoadingService LoadingService
-@inject IDocumentService DocumentService
-
-@using System.Net;
+﻿@inherits DocHistoryBase
 
 @if (history != null)
 {
@@ -11,7 +7,7 @@
         {
             <div class="row">
                 <div class="col-12">
-                    <div class="alert alert-info">No audits found for the document.</div>
+                    <div class="alert alert-warning"><span class="oi oi-circle-x"></span>&nbsp;No audits found for the document.</div>
                 </div>
             </div>
         }
@@ -19,7 +15,7 @@
         {
             <div class="row">
                 <div class="col-12">
-                    <div class="alert alert-info">@history.Count audit @(history.Count == 1 ? string.Empty : "s") found for the document.</div>
+                    <div class="alert alert-info"><span class="oi oi-circle-check"></span>&nbsp;@history.Count audit@(history.Count == 1 ? string.Empty : "s") found for the document.</div>
                 </div>
             </div>
             <div class="row">
@@ -37,31 +33,4 @@
             }
         }
     </div>
-}
-
-@code {
-    private List<DocumentAuditSummary> history = null;
-
-    private string _uid = string.Empty;
-
-    [Parameter]
-    public string Uid { get; set; }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (Uid != _uid)
-        {
-            _uid = Uid;
-            await LoadingService.WrapExecutionAsync(
-                async () =>
-                    history =
-                    await DocumentService.LoadDocumentHistoryAsync(_uid));
-        }
-        await base.OnParametersSetAsync();
-    }
-
-    private void Navigate(DocumentAuditSummary audit)
-    {
-        NavigationService.NavigateTo($"/View/{WebUtility.UrlEncode(audit.Uid)}?history={audit.Id}", true);
-    }
 }

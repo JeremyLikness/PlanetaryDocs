@@ -1,22 +1,21 @@
-﻿@inject HistoryService HistoryService
-@inject NavigationManager NavigationService
+﻿@inherits EditBarBase
 
 <div class="row">
     <div class="col">
         <button disabled="@(!IsValid || !IsDirty)"
                 @onclick="async () => await SaveAsync()"
                 class="btn btn-sm btn-success">
-            💾 Save
+            <span class="oi oi-hard-drive"></span>&nbsp;Save
         </button>
-        <span class="small">&nbsp;(@ChangeCount changes detected)&nbsp;</span>
+        <span class="text-sm-left">&nbsp;(@ChangeCount changes detected)&nbsp;</span>
         <button disabled="@(!IsDirty)" class="btn btn-sm btn-warning"
                 @onclick="() => Reset()">
-            🔃 Reset
+            <span class="oi oi-reload"></span>&nbsp;Reset
         </button>
         <span>&nbsp;</span>
         <button class="btn btn-danger btn-sm"
                 @onclick="() => Cancel()">
-            ❌ Cancel
+            <span class="oi oi-x"></span>&nbsp;Cancel
         </button>
     </div>
 </div>
@@ -24,25 +23,4 @@
     <div class="col">
         &nbsp;
     </div>
-</div>
-
-@code {
-    [Parameter]
-    public bool IsDirty { get; set; }
-
-    [Parameter]
-    public bool IsValid { get; set; }
-
-    [Parameter]
-    public int ChangeCount { get; set; }
-
-    [Parameter]
-    public Func<Task> SaveAsync { get; set; }
-
-    private void Reset() => NavigationService.NavigateTo(
-        NavigationService.Uri, 
-        true);
-
-    private void Cancel() => InvokeAsync(async () => 
-        await HistoryService.GoBackAsync());
-} 
+</div> 
