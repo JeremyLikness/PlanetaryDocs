@@ -1,106 +1,165 @@
-﻿using Microsoft.AspNetCore.Components;
-using PlanetaryDocs.Domain;
-using PlanetaryDocs.Services;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
 using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using PlanetaryDocs.Domain;
+using PlanetaryDocs.Services;
 
 namespace PlanetaryDocs.Pages
 {
+    /// <summary>
+    /// Code for the <see cref="View"/> component.
+    /// </summary>
     public class ViewBase : ComponentBase
     {
+        private string uid = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the implementation of <see cref="IDocumentService"/>.
+        /// </summary>
         [Inject]
         public IDocumentService DocumentService { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="LoadingService"/>.
+        /// </summary>
         [CascadingParameter]
         public LoadingService LoadingService { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="NavigationManager"/>.
+        /// </summary>
         [Inject]
         public NavigationManager NavigationService { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="TitleService"/>.
+        /// </summary>
         [Inject]
         public TitleService TitleService { get; set; }
 
-        protected bool showHistory = false;
-        protected bool previewHtml = false;
-        protected bool showMarkdown = true;
-        protected string _uid = string.Empty;
-        protected bool loading = true;
-        protected bool notFound = false;
-        protected bool audit = false;
-
+        /// <summary>
+        /// Gets or sets the unique identifier for the documnt.
+        /// </summary>
         [Parameter]
         public string Uid { get; set; }
 
-        protected Document document = null;
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the document history.
+        /// </summary>
+        protected bool ShowHistory { get; set; } = false;
 
-        protected string toggleText => showMarkdown ?
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the "Preview HTML" option.
+        /// </summary>
+        protected bool PreviewHtml { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the option to switch to Markdown.
+        /// </summary>
+        protected bool ShowMarkdown { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a loading operation is happening.
+        /// </summary>
+        protected bool Loading { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the document exists.
+        /// </summary>
+        protected bool NotFound { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show recent audit history.
+        /// </summary>
+        protected bool Audit { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the <see cref="Document"/> to view.
+        /// </summary>
+        protected Document Document { get; set; } = null;
+
+        /// <summary>
+        /// Gets the text to toggle between markdown and preiew or HTML.
+        /// </summary>
+        protected string ToggleText => ShowMarkdown ?
             "Show HTML" : "Show Markdown";
 
-        protected string previewText => previewHtml ?
+        /// <summary>
+        /// Gets the text to show preview text or rendered HTML.
+        /// </summary>
+        protected string PreviewText => PreviewHtml ?
             "Show Source" : "Show Preview";
 
-        protected string title => audit ? $"[ARCHIVE] {document?.Title}"
-            : document?.Title;
+        /// <summary>
+        /// Gets the title for the current item.
+        /// </summary>
+        protected string Title => Audit ? $"[ARCHIVE] {Document?.Title}"
+            : Document?.Title;
 
-        protected string SafeUid(string uid) =>
-            WebUtility.UrlEncode(uid);
-
+        /// <summary>
+        /// Called when the <see cref="Document"/> identifier is set.
+        /// </summary>
+        /// <returns>An asynchronous task.</returns>
         protected override async Task OnParametersSetAsync()
         {
             var newUid = WebUtility.UrlDecode(Uid);
-            if (newUid != _uid)
+            if (newUid != uid)
             {
                 var history = string.Empty;
-                if (NavigationService.Uri.IndexOf('?') > 0)
+                var query = NavigationHelper.GetQueryString(
+                    NavigationService.Uri);
+                if (query.ContainsKey(nameof(history)))
                 {
-                    var parts = NavigationService.Uri.Split('?');
-                    var keyValues = parts[1].Split('&');
-                    var historyPair = keyValues.FirstOrDefault(kv =>
-                        kv.StartsWith("history="));
-                    if (!string.IsNullOrWhiteSpace(historyPair))
-                    {
-                        history = historyPair.Split('=')[1];
-                    }
+                    history = query[nameof(history)];
                 }
-                loading = false;
-                notFound = false;
-                _uid = newUid;
+
+                Loading = false;
+                NotFound = false;
+                uid = newUid;
                 try
                 {
-                    loading = true;
+                    Loading = true;
                     if (string.IsNullOrWhiteSpace(history))
                     {
                         await LoadingService.WrapExecutionAsync(
-                            async () => document = await
-                                DocumentService.LoadDocumentAsync(_uid));
-                        notFound = document == null;
-                        audit = false;
+                            async () => Document = await
+                                DocumentService.LoadDocumentAsync(uid));
+                        NotFound = Document == null;
+                        Audit = false;
                     }
                     else
                     {
                         await LoadingService.WrapExecutionAsync(
-                            async () => document = await
-                                DocumentService.LoadDocumentSnapshotAsync(Guid.Parse(history), _uid));
-                        audit = true;
-                        notFound = document == null;
+                            async () => Document = await
+                                DocumentService.LoadDocumentSnapshotAsync(Guid.Parse(history), uid));
+                        Audit = true;
+                        NotFound = Document == null;
                     }
-                    loading = false;
-                    await TitleService.SetTitleAsync($"Viewing {title}");
+
+                    Loading = false;
+                    await TitleService.SetTitleAsync($"Viewing {Title}");
                 }
                 catch
                 {
-                    notFound = true;
+                    NotFound = true;
                 }
             }
+
             await base.OnParametersSetAsync();
         }
 
+        /// <summary>
+        /// Go back to main version of the document.
+        /// </summary>
         protected void BackToMain()
         {
             NavigationService.NavigateTo(
-                $"/View/{WebUtility.UrlEncode(Uid)}",
+                NavigationHelper.ViewDocument(Uid),
                 true);
         }
     }

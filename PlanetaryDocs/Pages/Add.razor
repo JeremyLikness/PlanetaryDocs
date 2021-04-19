@@ -3,27 +3,27 @@
 @inherits AddBase
 
 <div class="container">
-    @if (saving)
+    @if (Saving)
     {
         <Saving/>
     }
-    else if (loading)
+    else if (Loading)
     {
         <Loading/>
     }
     else
     {
-        <EditBar ChangeCount="changeCount"
+        <EditBar ChangeCount="ChangeCount"
                  IsValid="IsValid"
-                 IsDirty="isDirty"
+                 IsDirty="IsDirty"
                  SaveAsync="SaveAsync"/>
         <div class="row">
             <div class="col-12">
-                <Editor DocumentToEdit="document"
+                <Editor DocumentToEdit="Document"
                         Insert="true"
                         @bind-IsValid="IsValid"
-                        @bind-ChangeCount="changeCount"
-                        @ref="editor" />
+                        @bind-ChangeCount="ChangeCount"
+                        @ref="Editor" />
             </div>
         </div>
     }

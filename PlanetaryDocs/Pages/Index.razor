@@ -9,42 +9,41 @@
             <strong>Search Documents:</strong>
         </div>
     </div>
-    <div class="row @(loading ? "loading" : string.Empty)"
+    <div class="row @(Loading ? "loading" : string.Empty)"
          @onkeypress="HandleKeyPress">
         <div class="col-4">
-            @if (loading)
+            @if (Loading)
             {
-                <p>@text</p>
+                <p>@Text</p>
             }
             else
             {
-                <input 
-                       tabindex="100"
-                       @bind-value="text"
-                   @bind-value:event="oninput"
-                   @ref="inputElem"
-                   autofocus
-                   placeholder="Enter search text" />
+                <input tabindex="100"
+                        @bind-value="Text"
+                        @bind-value:event="oninput"
+                        @ref="InputElement"
+                        autofocus
+                        placeholder="Enter search text" />
             }
         </div>
         <div class="col-3">
-            @if (@loading)
+            @if (@Loading)
             {
-                <p><strong>Alias:</strong>&nbsp;@alias</p>
+                <p><strong>Alias:</strong>&nbsp;@Alias</p>
             }
             else
             {
-                <AliasSearch TabIndex="200" @bind-Alias="alias"/>
+                <AliasSearch TabIndex="200" @bind-Alias="Alias"/>
             }
         </div>
         <div class="col-3">
-            @if (loading)
+            @if (Loading)
             {
-                <p><strong>Tag:</strong>&nbsp;@tag</p>
+                <p><strong>Tag:</strong>&nbsp;@Tag</p>
             }
             else
             {
-            <TagSearch TabIndex="300" @bind-Tag="tag" />
+            <TagSearch TabIndex="300" @bind-Tag="Tag" />
             }
         </div>
         <div class="col-2">
@@ -58,7 +57,7 @@
     </div>
     <div class="row">
         <div class="container">
-            @if (loading)
+            @if (Loading)
             {
                 <div class="row">
                     <div class="col-12">
@@ -66,28 +65,28 @@
                     </div>
                 </div>
             }
-            @if (docsList != null && !loading)
+            @if (DocsList != null && !Loading)
             {
                 <div class="row">
-                    <div class="col-12">
-                        Search criteria: Alias = '@alias', Tag = '@tag', SearchText = '@text''
+                    <div class="col-12 text-sm-left">
+                        Search criteria: Alias = '@Alias', Tag = '@Tag', SearchText = '@Text''
                     </div>
                     <div class="col-12">
                         <div class="alert alert-info">
-                            @if (docsList.Count < 1)
+                            @if (DocsList.Count < 1)
                             {
                                 <span class="oi oi-circle-x"></span>
                                 <span>&nbsp;No documents found.</span>
                             }
-                            @if (docsList.Count == 1)
+                            @if (DocsList.Count == 1)
                             {
                                 <span class="oi oi-circle-check"></span>
                                 <span>&nbsp;One document found.</span>
                             }
-                            @if (docsList.Count > 1)
+                            @if (DocsList.Count > 1)
                             {
                                 <span class="oi oi-circle-check"></span>
-                                <span>&nbsp;@docsList.Count documents found.</span>
+                                <span>&nbsp;@DocsList.Count documents found.</span>
                             }
                         </div>
                     </div>
@@ -103,15 +102,15 @@
                         <b>Title</b>
                     </div>
                 </div>
-                foreach (var doc in docsList)
+                foreach (var doc in DocsList)
                 {
                     <div @key="doc.Uid" class="row result">
                         <div class="col-2">
-                            <a title="Edit document" href="/Edit/@(SafeUid(doc.Uid))">
+                            <a title="Edit document" href="@NavigationHelper.EditDocument(doc.Uid)">
                                 <span class="oi oi-pencil">&nbsp;</span>
                             </a>
                             &nbsp;
-                            <a title="View document" href="/View/@(SafeUid(doc.Uid))">
+                            <a title="View document" href="@NavigationHelper.ViewDocument(doc.Uid)">
                                 <span class="oi oi-eye">&nbsp;</span>
                             </a>
                         </div>

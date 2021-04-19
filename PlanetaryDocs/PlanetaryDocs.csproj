@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Description>Blazor Server application to demonstrate Create, Read, Update, and Delete (CRUD) for an Azure Cosmos DB database using Entity Framework Core.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,5 +12,5 @@
   <ItemGroup>
     <ProjectReference Include="..\PlanetaryDocs.DataAccess\PlanetaryDocs.DataAccess.csproj" />
   </ItemGroup>
-
+  
 </Project>

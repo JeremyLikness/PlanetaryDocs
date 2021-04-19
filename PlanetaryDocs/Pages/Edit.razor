@@ -3,7 +3,7 @@
 @inherits EditBase
 
 <div class="container">
-    @if (notfound)
+    @if (NotFound)
     {
         <div class="row">
             <div class="col-12">
@@ -13,21 +13,21 @@
             </div>
         </div>
     }
-    else if (saving)
+    else if (Saving)
     {
         <Saving />
     }
-    else if (loading)
+    else if (Loading)
     {
         <Loading />
     }
     else
     {
-        <EditBar ChangeCount="changeCount"
-                 IsDirty="isDirty"
+        <EditBar ChangeCount="ChangeCount"
+                 IsDirty="IsDirty"
                  IsValid="IsValid"
                  SaveAsync="SaveAsync" />
-        @if (concurrency)
+        @if (Concurrency)
         {
             <div class="row">
                 <div class="col-12">
@@ -39,10 +39,10 @@
         }
         <div class="row">
             <div class="col-12">
-                <Editor DocumentToEdit="document"
+                <Editor DocumentToEdit="Document"
                         @bind-IsValid="IsValid"
-                        @bind-ChangeCount="changeCount"
-                        @ref="editor" />
+                        @bind-ChangeCount="ChangeCount"
+                        @ref="Editor" />
             </div>
         </div>
     }

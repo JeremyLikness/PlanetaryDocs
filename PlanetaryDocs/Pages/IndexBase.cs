@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,67 +12,116 @@ using PlanetaryDocs.Services;
 
 namespace PlanetaryDocs.Pages
 {
+    /// <summary>
+    /// Code for the <see cref="Index"/> component.
+    /// </summary>
     public class IndexBase : ComponentBase
     {
-        protected bool loading = true;
-        protected bool navigatingToThisPage = true;
-        protected bool searchQueued = false;
-        protected string alias = string.Empty;
-        protected string tag = string.Empty;
-        protected string text = string.Empty;
-        protected List<DocumentSummary> docsList = null;
-        protected ElementReference inputElem;
+        private bool navigatingToThisPage = true;
+        private bool searchQueued = false;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether an asynchronous loading
+        /// operation is taking place.
+        /// </summary>
+        protected bool Loading { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the alias to filter search.
+        /// </summary>
+        protected string Alias { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the tag to filter search.
+        /// </summary>
+        protected string Tag { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the text to filter search.
+        /// </summary>
+        protected string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the search results.
+        /// </summary>
+        protected List<DocumentSummary> DocsList { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets the reference to the text input element for focus.
+        /// </summary>
+        protected ElementReference InputElement { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="NavigationManager"/>.
+        /// </summary>
         [Inject]
         protected NavigationManager NavigationService { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IDocumentService"/> implementation.
+        /// </summary>
         [Inject]
         protected IDocumentService DocumentService { get; set; }
 
+        /// <summary>
+        /// Gets or sets the loading service.
+        /// </summary>
         [CascadingParameter]
         protected LoadingService LoadingService { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether there is enough information to
+        /// perform a search.
+        /// </summary>
         protected bool CanSearch =>
-            !loading && (
-                (!string.IsNullOrWhiteSpace(text) &&
-                    text.Trim().Length > 2)
-                || !string.IsNullOrWhiteSpace(alias)
-                || !string.IsNullOrWhiteSpace(tag));
+            !Loading && (
+                (!string.IsNullOrWhiteSpace(Text) &&
+                    Text.Trim().Length > 2)
+                || !string.IsNullOrWhiteSpace(Alias)
+                || !string.IsNullOrWhiteSpace(Tag));
 
+        /// <summary>
+        /// Handle parsing search values passed in via query string.
+        /// </summary>
+        /// <param name="firstRender">A value indicating whether this is the
+        /// first render.</param>
         protected override void OnAfterRender(bool firstRender)
         {
             var stateHasChanged = false;
+
             if (navigatingToThisPage)
             {
-                loading = false;
+                Loading = false;
                 stateHasChanged = true;
-            }
+                var queryValues = NavigationHelper.GetQueryString(
+                    NavigationService.Uri);
 
-            if (navigatingToThisPage && NavigationService.Uri.IndexOf('?') > 0)
-            {
-                var queryString = NavigationService.Uri.Split('?');
-                var keyValuePairs = queryString[1].Split('&');
-                foreach (var keyValuePair in keyValuePairs)
+                var hasSearch = false;
+
+                foreach (var key in queryValues.Keys)
                 {
-                    if (keyValuePair.IndexOf('=') > 0)
+                    switch (key)
                     {
-                        var pair = keyValuePair.Split('=');
-                        switch (pair[0])
-                        {
-                            case nameof(text):
-                                text = WebUtility.UrlDecode(pair[1]);
-                                break;
-                            case nameof(alias):
-                                alias = WebUtility.UrlDecode(pair[1]);
-                                break;
-                            case nameof(tag):
-                                tag = WebUtility.UrlDecode(pair[1]);
-                                break;
-                        }
+                        case nameof(Text):
+                            Text = queryValues[key];
+                            hasSearch = true;
+                            break;
+                        case nameof(Alias):
+                            Alias = queryValues[key];
+                            hasSearch = true;
+                            break;
+                        case nameof(Tag):
+                            Tag = queryValues[key];
+                            hasSearch = true;
+                            break;
                     }
                 }
+
                 navigatingToThisPage = false;
-                InvokeAsync(async () => await SearchAsync());
+                if (hasSearch)
+                {
+                    InvokeAsync(async () => await SearchAsync());
+                }
             }
 
             if (stateHasChanged)
@@ -81,17 +132,25 @@ namespace PlanetaryDocs.Pages
             base.OnAfterRender(firstRender);
         }
 
+        /// <summary>
+        /// Handle keyboad events, i.e. Enter key to submit.
+        /// </summary>
+        /// <param name="key">The key pressed event arguments.</param>
         protected void HandleKeyPress(KeyboardEventArgs key)
         {
-            if (key.Key == "Enter")
+            if (key.Key == KeyNames.Enter.ToString())
             {
                 InvokeAsync(SearchAsync);
             }
         }
 
+        /// <summary>
+        /// Search function.
+        /// </summary>
+        /// <returns>An asynchronous task.</returns>
         protected async Task SearchAsync()
         {
-            if (loading)
+            if (Loading)
             {
                 searchQueued = true;
                 return;
@@ -99,59 +158,63 @@ namespace PlanetaryDocs.Pages
 
             searchQueued = false;
 
-            alias = alias.Trim();
-            tag = tag.Trim();
-            text = text.Trim();
+            Alias = Alias.Trim();
+            Tag = Tag.Trim();
+            Text = Text.Trim();
 
             if (CanSearch)
             {
-                loading = true;
+                Loading = true;
 
                 do
                 {
                     searchQueued = false;
                     await LoadingService.WrapExecutionAsync(
                         async () =>
-                    docsList = await DocumentService.QueryDocumentsAsync(
-                        text,
-                        alias,
-                        tag));
+                    DocsList = await DocumentService.QueryDocumentsAsync(
+                        Text,
+                        Alias,
+                        Tag));
                 }
                 while (searchQueued);
 
-                loading = false;
+                Loading = false;
             }
             else
             {
-                docsList = null;
+                DocsList = null;
             }
 
             StateHasChanged();
 
             var searchParameters = new[]
             {
-                (nameof(text), WebUtility.UrlEncode(text)),
-                (nameof(alias), WebUtility.UrlEncode(alias)),
-                (nameof(tag), WebUtility.UrlEncode(tag))
+                (nameof(Text), WebUtility.UrlEncode(Text)),
+                (nameof(Alias), WebUtility.UrlEncode(Alias)),
+                (nameof(Tag), WebUtility.UrlEncode(Tag)),
             };
 
             var queryString =
-                string.Join('&',
-                searchParameters.Select(p => $"{p.Item1}={p.Item2}"));
+                NavigationHelper.CreateQueryString(
+                    (nameof(Text), WebUtility.UrlEncode(Text)),
+                    (nameof(Alias), WebUtility.UrlEncode(Alias)),
+                    (nameof(Tag), WebUtility.UrlEncode(Tag)));
 
             navigatingToThisPage = false;
             NavigationService.NavigateTo($"/?{queryString}");
 
-            await inputElem.FocusAsync();
+            await InputElement.FocusAsync();
         }
 
-        protected string SafeUid(string uid) =>
-            WebUtility.UrlEncode(uid);
-
+        /// <summary>
+        /// Navigate to view a particular uid.
+        /// </summary>
+        /// <param name="uid">The unique document identifier.</param>
         protected void Navigate(string uid)
         {
             navigatingToThisPage = false;
-            NavigationService.NavigateTo($"/View/{SafeUid(uid)}");
+            NavigationService.NavigateTo(
+                NavigationHelper.ViewDocument(uid));
         }
 
     }

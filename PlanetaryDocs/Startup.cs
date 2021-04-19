@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
+using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -8,21 +12,32 @@ using Microsoft.Extensions.Options;
 using PlanetaryDocs.DataAccess;
 using PlanetaryDocs.Domain;
 using PlanetaryDocs.Services;
-using System;
 
 namespace PlanetaryDocs
 {
+    /// <summary>
+    /// Blazor startup.
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration information.</param>
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        /// <summary>
+        /// Gets t configuration instance.
+        /// </summary>
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        /// <summary>
+        /// Select the services used by your app.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
@@ -39,16 +54,20 @@ namespace PlanetaryDocs
                    opts.UseCosmos(
                        cosmosSettings.EndPoint,
                        cosmosSettings.AccessKey,
-                       nameof(DocsContext)
-                       );
+                       nameof(DocsContext));
                });
+
             services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<LoadingService>();
             services.AddScoped<HistoryService>();
             services.AddScoped<TitleService>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// Configure the selected services.
+        /// </summary>
+        /// <param name="app">The app builder.</param>
+        /// <param name="env">The current environment.</param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -58,6 +77,7 @@ namespace PlanetaryDocs
             else
             {
                 app.UseExceptionHandler("/Error");
+
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }

@@ -5,7 +5,7 @@
         <button disabled="@(!IsValid || !IsDirty)"
                 @onclick="async () => await SaveAsync()"
                 class="btn btn-sm btn-success">
-            <span class="oi oi-hard-drive"></span>&nbsp;Save
+            <span class="oi oi-cloud-upload"></span>&nbsp;Save
         </button>
         <span class="text-sm-left">&nbsp;(@ChangeCount changes detected)&nbsp;</span>
         <button disabled="@(!IsDirty)" class="btn btn-sm btn-warning"

@@ -14,14 +14,14 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
-        @foreach (var navItem in navItems)
+        @foreach (var navItem in NavItems)
         {
             <li @key="navItem.Text" class="nav-item px-3">
                 @if (navItem.Disabled == false)
                 {
                     <NavLink class="nav-link"
                              href="@navItem.Href"
-                             Match="NavLinkMatch.Prefix">
+                             Match="@navItem.Match">
                         <span class="oi oi-@navItem.Icon"
                               aria-hidden="true"></span>&nbsp;@navItem.Text
                     </NavLink>
@@ -30,7 +30,7 @@
                 {
                     <DisabledNavLink class="nav-link"
                                         href="@navItem.Href"
-                                        Match="NavLinkMatch.Prefix">
+                                        Match="@navItem.Match">
                         <span class="oi oi-@navItem.Icon" aria-hidden="true"></span>&nbsp;@navItem.Text
                     </DisabledNavLink>
                 }
@@ -40,5 +40,5 @@
 </div>
 
 <div class="version">
-    version: @version
+    version: @Version
 </div>
