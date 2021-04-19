@@ -10,6 +10,11 @@ read our [Guide for Contributors](./CONTRIBUTING.md).
 
 This project is licensed under MIT. See the [license file](./LICENSE) for more information.
 
+> **Important Security Notice** This app is meant for demo purposes only. As implemented, it
+is not a production-ready app. More specifically, there are no users or roles defined and
+access is _not_ secured by a login. That means anyone with the URL can modify your 
+document database. This issue is being tracked at [#2](https://github.com/JeremyLikness/PlanetaryDocs/issues/2).
+
 ## Quickstart
 
 Here's how to get started in a few easy steps.
@@ -60,3 +65,6 @@ in the `appsettings.json` file, or create a new section in `appsettings.Developm
 and add you access key and endpoint. Run the app. You should be ready to go!
 
 ## Project Details
+
+The following features were integrated into this project.
+

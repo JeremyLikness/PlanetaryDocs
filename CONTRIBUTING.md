@@ -12,7 +12,8 @@ To request a feature or report a new bug, [file a new issue](https://github.com/
 
 ## Contributing code and content
 
-We accept fixes and features! 
+We accept fixes and features! See items with [help wanted](https://github.com/JeremyLikness/PlanetaryDocs/labels/help%20wanted) and features or bug fixes
+we think make [a good first issue](https://github.com/JeremyLikness/PlanetaryDocs/labels/good%20first%20issue).
 
 ### Identifying the scale
 
