@@ -1,4 +1,4 @@
-name: .NET Core Builds
+name: .NET 5 Builds
 
 on:
   push:
