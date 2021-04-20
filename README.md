@@ -70,3 +70,43 @@ and add you access key and endpoint. Run the app. You should be ready to go!
 
 The following features were integrated into this project.
 
+`PlanetaryDocsLoader` parses the docs repository and inserts the 
+documents into the database. It includes tests to verify the
+functionality is working.
+
+`PlanetaryDocs.Domain` hosts the domain classes, validation logic,
+and signature (interface) for data access.
+
+`PlanetaryDocs.DataAccess` contains the EF Core `DbContext` 
+and an implementation of the data access service.
+
+- `DocsContext`
+    - Has nodel-building code that shows how to map ownership
+    - Uses value converters with JSON serialization to support primitives collection and nested
+complex types
+    - Demonstrates use of partition keys, including how to define them for the
+model and how to specify them in queries
+    - Provides an example of specifying the container by entity
+    - Shows how to turn off the discrinator
+    - Stores two entity types (aliases and tags) in the same container
+    - Uses a "shadow property" to track partition keys on aliases and tags
+    - Hooks into the `SavingChanges` event to automate the generation of audit snapshots
+- `DocumentService`
+    - Shows various strategies for C.R.U.D. operations
+    - Programmatically synchronizes related entities
+    - Demonstrates how to handle updates with concurrency to disconnected entities
+    - Uses the new `IDbContextFactory<T>` implementation to manage context instances
+
+`PlanetaryDocs` is a Blazor Server app.
+
+- Examples of JavaScript interop in the `TitleService`, `HistoryService`, and `MultiLineEditService`.
+- Uses keyboard handlers to allow keyboard-based navigation and input on the edit page
+- Shows a generic autocomplete component with debounce built-in
+- `HtmlPreview` uses a phantom `textarea` to render an HTML preview
+- `MarkDig` is used to transform markdown into HTML
+- The `MultiLineEdit` component shows a workaround using JavaScript interop for limitations with fields that have large input values
+- The `Editor` component supports concurrency. If you open a document twice in separate tabs and edit in both, the second will notify that changes were made and provide the option to reset or overwrite
+
+Your feedback is valuable! Reach me online at [@JeremyLikness](https://twitter.com/JeremyLikness). 
+
+

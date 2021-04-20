@@ -1,9 +1,9 @@
 ﻿@inherits DocHistoryBase
 
-@if (history != null)
+@if (History != null)
 {
     <div class="container">
-        @if (history.Count == 0)
+        @if (History.Count == 0)
         {
             <div class="row">
                 <div class="col-12">
@@ -11,11 +11,11 @@
                 </div>
             </div>
         }
-        @if (history.Count > 0)
+        @if (History.Count > 0)
         {
             <div class="row">
                 <div class="col-12">
-                    <div class="alert alert-info"><span class="oi oi-circle-check"></span>&nbsp;@history.Count audit@(history.Count == 1 ? string.Empty : "s") found for the document.</div>
+                    <div class="alert alert-info"><span class="oi oi-circle-check"></span>&nbsp;@History.Count audit@(History.Count == 1 ? string.Empty : "s") found for the document.</div>
                 </div>
             </div>
             <div class="row">
@@ -23,7 +23,7 @@
                 <div class="col-3">Alias</div>
                 <div class="col-6">Title</div>
             </div>
-            @foreach (var item in history)
+            @foreach (var item in History)
             {
                 <div class="row summary" @onclick="() => Navigate(item)">
                     <div class="col-3">@item.Timestamp</div>

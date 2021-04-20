@@ -61,6 +61,7 @@ namespace PlanetaryDocs
             services.AddScoped<LoadingService>();
             services.AddScoped<HistoryService>();
             services.AddScoped<TitleService>();
+            services.AddScoped<MultiLineEditService>();
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ using PlanetaryDocs.Services;
 namespace PlanetaryDocs.Pages
 {
     /// <summary>
-    /// Code for the <see cref="View"/> component.
+    /// Code for the view component.
     /// </summary>
     public class ViewBase : ComponentBase
     {

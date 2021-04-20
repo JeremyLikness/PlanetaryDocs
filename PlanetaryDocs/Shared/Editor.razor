@@ -41,6 +41,7 @@
             <div class="row">
                 <div class="col-12">
                     <ValidatedInput AutoFocus="@Insert"
+                                    TabIndex="10"
                                     PlaceHolder="Enter the document id"
                                     @bind-Value="@Uid"
                                     @bind-Validation="@UidValidation"
@@ -56,6 +57,7 @@
         <div class="row">
             <div class="col-12">
                 <ValidatedInput AutoFocus="@(!Insert)"
+                                TabIndex="20"
                                 PlaceHolder="Enter the document title"
                                 @bind-Value="@Title"
                                 @bind-Validation="@TitleValidation"
@@ -67,18 +69,21 @@
                 @if (ExistingAlias)
                 {
                     <AliasSearch @ref="AliasSearch"
+                                 TabIndex="30"
                                  @bind-Alias="@Alias" />
                 }
                 else
                 {
                     <span>Enter new alias:&nbsp;</span>
                     <ValidatedInput @ref="NewAliasInput"
+                                    TabIndex="30"
                                     PlaceHolder="Enter the alias"
                                     @bind-Value="@Alias"
                                     @bind-Validation="@AliasValidation"
                                     Validate="value => ValidationRules.ValidateProperty(nameof(Document.AuthorAlias), value)" />
                 }
                 <a href="#"
+                   tabindex="50"
                    @onclick="async () => await ToggleAliasAsync()"
                    @onclick:preventDefault>
                     @AliasButton
@@ -88,7 +93,7 @@
         <div class="row">
             <div class="col-12">
                 <span class="field-label">Choose tags:</span>&nbsp;
-                <TagPicker @bind-Tags="@TagList" />
+                <TagPicker TabIndex="100" @bind-Tags="@TagList" />
             </div>
         </div>
         <div class="row">
@@ -99,6 +104,7 @@
         <div class="row">
             <div class="col-12">
                 <ValidatedInput PlaceHolder="Enter the description"
+                                TabIndex="200"
                                 @bind-Value="@Description"
                                 @bind-Validation="@DescriptionValidation"
                                 Validate="value => ValidationRules.ValidateProperty(nameof(Document.Description), value)" />
@@ -118,7 +124,7 @@
         </div>
         <div class="row">
             <div class="col-5">
-                <MultiLineEdit @bind-Text="@Markdown" />
+                <MultiLineEdit TabIndex="300" @bind-Text="@Markdown" />
             </div>
             <div class="col-6">
                 <HtmlPreview @ref="Preview" IsEdit="true" Html="@Html" />

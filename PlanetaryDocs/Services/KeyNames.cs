@@ -6,21 +6,21 @@ namespace PlanetaryDocs.Services
     /// <summary>
     /// Key names for input processing.
     /// </summary>
-    public enum KeyNames
+    public static class KeyNames
     {
         /// <summary>
         /// Enter key.
         /// </summary>
-        Enter,
+        public const string Enter = nameof(Enter);
 
         /// <summary>
         /// Arrow down key.
         /// </summary>
-        ArrowDown,
+        public const string ArrowDown = nameof(ArrowDown);
 
         /// <summary>
         /// Arrow up key.
         /// </summary>
-        ArrowUp,
+        public const string ArrowUp = nameof(ArrowUp);
     }
 }

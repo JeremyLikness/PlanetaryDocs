@@ -11,7 +11,7 @@ using PlanetaryDocs.Services;
 namespace PlanetaryDocs.Shared
 {
     /// <summary>
-    /// Component code for <see cref="Editor"/> component.
+    /// Code for <see cref="Editor"/> component.
     /// </summary>
     public class EditorBase : ComponentBase
     {

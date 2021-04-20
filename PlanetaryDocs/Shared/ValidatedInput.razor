@@ -5,20 +5,22 @@
         <div class="col-12">
             @if (UseTextArea)
             {
-                <textarea @ref="textAreaControl"
-                          class="@error"
+                <textarea @ref="TextAreaControl"
+                          tabindex="@TabIndex"
+                          class="@Error"
                           rows="10" 
                           cols="40"
-                          @bind-value="@value"
+                          @bind-value="@InnerValue"
                           @bind-value:event="oninput">
                 </textarea>
             }
             else
             {
-            <input @ref="inputControl"
-                   class="@error"
+            <input @ref="InputControl"
+                   tabindex="@TabIndex"
+                   class="@Error"
                    type="text" 
-                   @bind-value="@value" 
+                   @bind-value="@InnerValue" 
                    @bind-value:event="oninput"/>        
             }
         </div>

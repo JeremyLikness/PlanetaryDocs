@@ -13,7 +13,7 @@ using PlanetaryDocs.Services;
 namespace PlanetaryDocs.Pages
 {
     /// <summary>
-    /// Code for the <see cref="Index"/> component.
+    /// Code for the index component.
     /// </summary>
     public class IndexBase : ComponentBase
     {
@@ -138,7 +138,7 @@ namespace PlanetaryDocs.Pages
         /// <param name="key">The key pressed event arguments.</param>
         protected void HandleKeyPress(KeyboardEventArgs key)
         {
-            if (key.Key == KeyNames.Enter.ToString())
+            if (key.Key == KeyNames.Enter)
             {
                 InvokeAsync(SearchAsync);
             }
@@ -216,6 +216,5 @@ namespace PlanetaryDocs.Pages
             NavigationService.NavigateTo(
                 NavigationHelper.ViewDocument(uid));
         }
-
     }
 }

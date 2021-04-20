@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,11 +12,11 @@ namespace PlanetaryDocs.Services
     /// </summary>
     public class LoadingService
     {
+        private readonly Action noop = () => { };
+
         private int asyncCount;
 
         private Action stateChangedCallback = null;
-
-        private Action noop = () => { };
 
         /// <summary>
         /// Gets or sets the callback to initiate a state change notification.

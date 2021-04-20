@@ -4,10 +4,10 @@
 
     <span class="labelArea">@LabelText</span>
 
-    @if (selected)
+    @if (Selected)
     {
         <a href="#" 
-            tabindex="@baseIndex"
+            tabindex="@BaseIndex"
             title="@SelectedValue - Click to change"
             @onclick="async () => await SetSelectionAsync(string.Empty, true)"
             @onclick:preventDefault>
@@ -16,16 +16,16 @@
     }
     else
     {
-        <input tabindex="@baseIndex"
+        <input tabindex="@BaseIndex"
                 @bind-value="Value"
-                @ref="inputElem"
+                @ref="InputElem"
                 @bind-value:event="oninput" 
                 placeholder="@PlaceHolderText" />
     }
 
-    @if (!selected && values != null)
+    @if (!Selected && Values != null)
     {
-        foreach (var result in values)
+        foreach (var result in Values)
         {
             <p tabindex="@GetIndex(result)" class="@GetClass(result)" @onclick="async ()=>await SetSelectionAsync(result)">@result</p>
         }

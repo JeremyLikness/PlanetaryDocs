@@ -7,34 +7,39 @@
         <span>
             "@tag" [<a href="#"
                        title="Remove"
+                       tabindex="@(IndexForTag(tag))"
                        @onclick="async () => await RemoveAsync(tag)"
                        @onclick:preventDefault>x</a>]
             &nbsp;
         </span>
     }
 }
-@if (pickNew)
+@if (PickNew)
 {
-    <TagSearch @bind-Tag="@NewTag" />
+    <TagSearch TabIndex="@(AltTabIndex.ToString())"
+               @bind-Tag="@NewTag" />
 }
 else
 {
     <a href="#"
-       @onclick="() => pickNew = true"
+       tabindex="@AltTabIndex"
+       @onclick="() => PickNew = true"
        @onclick:preventDefault>Pick Existing</a>
 }
 &nbsp;
 <input type="text" placeholder="Enter new tag"
-       @bind-value="addTag"
+       tabindex="@(AltTabIndex + 1)"
+       @bind-value="AddTag"
        @bind-value:event="oninput" />[
-@if (string.IsNullOrWhiteSpace(addTag))
+@if (string.IsNullOrWhiteSpace(AddTag))
 {
     <span>&nbsp;</span>
 }
 else
 {
     <a href="#"
+       tabindex="@(AltTabIndex + 2)"
        title="Add Tag"
-       @onclick="() => NewTag = addTag"
+       @onclick="() => NewTag = AddTag"
        @onclick:preventDefault>+</a>
 }]

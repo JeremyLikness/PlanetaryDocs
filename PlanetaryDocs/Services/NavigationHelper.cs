@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Jeremy Likness. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using Web = System.Net.WebUtility;
 
 namespace PlanetaryDocs.Services
 {
@@ -16,9 +17,14 @@ namespace PlanetaryDocs.Services
         /// Link to view a document.
         /// </summary>
         /// <param name="uid">The unique identifier.</param>
+        /// <param name="auditId">The audit id.</param>
         /// <returns>The view link.</returns>
-        public static string ViewDocument(string uid) =>
-            $"/View/{WebUtility.UrlEncode(uid)}";
+        public static string ViewDocument(
+            string uid,
+            Guid auditId = default) =>
+            auditId == default ?
+                $"/View/{Web.UrlEncode(uid)}"
+                : $"/View/{Web.UrlEncode(uid)}?history={Web.UrlEncode(auditId.ToString())}";
 
         /// <summary>
         /// Link to edit a document.
@@ -26,7 +32,7 @@ namespace PlanetaryDocs.Services
         /// <param name="uid">The unique identifier.</param>
         /// <returns>The view link.</returns>
         public static string EditDocument(string uid) =>
-            $"/Edit/{WebUtility.UrlEncode(uid)}";
+            $"/Edit/{Web.UrlEncode(uid)}";
 
         /// <summary>
         /// Decomposes the query string.
@@ -51,7 +57,7 @@ namespace PlanetaryDocs.Services
                 if (keyValuePair.IndexOf('=') > 0)
                 {
                     var pair = keyValuePair.Split('=');
-                    pairs.Add(pair[0], WebUtility.UrlDecode(pair[1]));
+                    pairs.Add(pair[0], Web.UrlDecode(pair[1]));
                 }
             }
 
@@ -70,7 +76,7 @@ namespace PlanetaryDocs.Services
                 string.Join(
                     '&',
                     values.Select(
-                        v => $"{v.key}={WebUtility.UrlEncode(v.value)}"));
+                        v => $"{v.key}={Web.UrlEncode(v.value)}"));
             return queryString;
         }
     }
