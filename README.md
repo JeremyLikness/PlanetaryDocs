@@ -1,5 +1,7 @@
 # Planetary Docs
 
+[![.NET 5 Builds](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml/badge.svg)](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml)
+
 Welcome to Planetary Docs! This repository is intended to showcase a full
 application that supports Create, Read, Update, and Delete operations (CRUD)
 using Blazor (Server), Entity Framework Core and Azure Cosmos DB.
