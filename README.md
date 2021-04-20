@@ -33,6 +33,8 @@ To run this demo, you will need to create an Azure Cosmos DB account. You can re
 [Create an Azure Cosmos DB account](https://docs.microsoft.com/azure/cosmos-db/create-cosmosdb-resources-portal#create-an-azure-cosmos-db-account) to learn how. Be sure to check out the option
 for a [free account](https://docs.microsoft.com/azure/cosmos-db/optimize-dev-test#azure-cosmos-db-free-tier)! Choose the SQL API.
 
+> No Azure account? No worries! You can also run this project using the [Azure Cosmos DB emulator](https://docs.microsoft.com/azure/cosmos-db/local-emulator).
+
 ### Clone the ASP.NET Core docs repository
 
 This is what was used for testing.
