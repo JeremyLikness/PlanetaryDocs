@@ -1,0 +1,24 @@
+name: .NET 5 Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '#skip_ci')"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Fetch
+      run: git fetch --unshallow
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Run all tests
+      run: dotnet test PlanetaryDocs.sln --logger trx
