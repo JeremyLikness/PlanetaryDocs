@@ -23,6 +23,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		version.json = version.json
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BE2E007C-9286-4061-AF85-D0E641C9AF79}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Directory.Build.props = Tests\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainTests", "Tests\DomainTests\DomainTests.csproj", "{2D7599D9-6851-4BA3-9B83-1BE219E286B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,9 +52,16 @@ Global
 		{43DFBA3B-80BE-4DCB-82D2-2EAC03CD5EF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43DFBA3B-80BE-4DCB-82D2-2EAC03CD5EF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43DFBA3B-80BE-4DCB-82D2-2EAC03CD5EF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D7599D9-6851-4BA3-9B83-1BE219E286B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D7599D9-6851-4BA3-9B83-1BE219E286B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D7599D9-6851-4BA3-9B83-1BE219E286B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D7599D9-6851-4BA3-9B83-1BE219E286B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2D7599D9-6851-4BA3-9B83-1BE219E286B9} = {BE2E007C-9286-4061-AF85-D0E641C9AF79}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2064456E-0D82-443B-ACBD-92A598775C6B}
