@@ -26,7 +26,7 @@ and tested by the Expression Power Tools team before being merged into the sourc
 ### Submitting a pull request
 
 If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests. Make sure the repository can build and all tests pass. 
-Familiarize yourself with the project workflow and our coding conventions. The project contains an [`.editorConfig`](https://github.com/JeremyLikness/ExpressionPowerTools/blob/master/.editorconfig)
+Familiarize yourself with the project workflow and our coding conventions. The project contains an [`.editorConfig`](https://github.com/JeremyLikness/PlanetaryDocs/blob/master/.editorconfig)
 that contains rules for conventions and is recognized automatically by Visual Studio 2019. 
 
 In general, the checklist for pull requests is:
@@ -34,6 +34,7 @@ In general, the checklist for pull requests is:
 - Check with the maintainers for larger requests
 - Ensure the project compiles in _both_ `Debug` and `Release` modes
 - All files added should have complete XML documentation with examples where appropriate and the required heading
+- Fill out the PR template as directed
 
 Project maintainers will review PRs and merge/update versions as appropriate.
 
