@@ -47,9 +47,9 @@ namespace PlanetaryDocs.Domain
         public string AuthorAlias { get; set; }
 
         /// <summary>
-        /// Gets the list of related tags.
+        /// Gets or sets the list of related tags.
         /// </summary>
-        public List<string> Tags { get; private set; }
+        public List<string> Tags { get; set; }
             = new List<string>();
 
         /// <summary>
@@ -77,23 +77,5 @@ namespace PlanetaryDocs.Domain
         /// <returns>The string representation.</returns>
         public override string ToString() =>
             $"Document {Uid} by {AuthorAlias} with {Tags.Count} tags: {Title}.";
-
-        /// <summary>
-        /// Makes a clone of the document.
-        /// </summary>
-        /// <returns>The new document.</returns>
-        public Document Clone() =>
-            new ()
-            {
-                AuthorAlias = AuthorAlias,
-                Description = Description,
-                ETag = ETag,
-                Html = Html,
-                Markdown = Markdown,
-                PublishDate = PublishDate,
-                Tags = new List<string>(Tags),
-                Title = Title,
-                Uid = Uid,
-            };
     }
 }

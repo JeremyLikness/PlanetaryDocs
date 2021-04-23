@@ -102,6 +102,11 @@ namespace PlanetaryDocs.Domain
             string fieldName,
             string val)
         {
+            if (string.IsNullOrWhiteSpace(val))
+            {
+                return InvalidResult($"Field '{fieldName}' cannot be null or empty.");
+            }
+
             return val.All(c => (c >= LowRange[0] && c <= LowRange[1])
             || (c >= HighRange[0] && c <= HighRange[1])) ?
                 ValidResult()

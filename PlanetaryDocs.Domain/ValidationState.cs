@@ -17,5 +17,12 @@ namespace PlanetaryDocs.Domain
         /// Gets or sets the reason why validation failed.
         /// </summary>
         public string Message { get; set; }
+
+        /// <summary>
+        /// String representation.
+        /// </summary>
+        /// <returns>The string represention.</returns>
+        public override string ToString() =>
+            IsValid ? "Valid" : $"Invalid: {Message}";
     }
 }

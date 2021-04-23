@@ -16,9 +16,9 @@ namespace PlanetaryDocs.Domain
         public string TagName { get; set; }
 
         /// <summary>
-        /// Gets a summary of documents with the tag.
+        /// Gets or sets a summary of documents with the tag.
         /// </summary>
-        public List<DocumentSummary> Documents { get; private set; }
+        public List<DocumentSummary> Documents { get; set; }
             = new List<DocumentSummary>();
 
         /// <summary>
