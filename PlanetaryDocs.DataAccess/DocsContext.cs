@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PlanetaryDocs.Domain;
 
 namespace PlanetaryDocs.DataAccess
@@ -147,16 +146,6 @@ namespace PlanetaryDocs.DataAccess
                     t => ToJson(t),
                     t => FromJson<List<string>>(t));
 
-            var docSummaryConverter =
-                new ValueConverter<List<DocumentSummary>, string>(
-                    ds => ToJson(ds),
-                    dsJson => FromJson<List<DocumentSummary>>(dsJson));
-
-            var docSummaryValueComparer =
-                new ValueComparer<DocumentSummary>(
-                    (d1, d2) => d1.Uid == d2.Uid,
-                    d => d.Uid.GetHashCode());
-
             var tagModel = modelBuilder.Entity<Tag>();
 
             tagModel.Property<string>(PartitionKey);
@@ -169,10 +158,7 @@ namespace PlanetaryDocs.DataAccess
             tagModel.Property(t => t.ETag)
                 .IsETagConcurrency();
 
-            tagModel.Property(t => t.Documents)
-                .HasConversion(
-                    docSummaryConverter,
-                    docSummaryValueComparer);
+            tagModel.OwnsMany(t => t.Documents);
 
             var authorModel = modelBuilder.Entity<Author>();
 
@@ -185,10 +171,7 @@ namespace PlanetaryDocs.DataAccess
             authorModel.Property(a => a.ETag)
                 .IsETagConcurrency();
 
-            authorModel.Property(t => t.Documents)
-                .HasConversion(
-                    docSummaryConverter,
-                    docSummaryValueComparer);
+            authorModel.OwnsMany(t => t.Documents);
 
             base.OnModelCreating(modelBuilder);
         }
