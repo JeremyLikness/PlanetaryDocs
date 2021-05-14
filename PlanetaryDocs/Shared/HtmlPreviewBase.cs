@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 namespace PlanetaryDocs.Shared
 {
@@ -14,12 +13,6 @@ namespace PlanetaryDocs.Shared
     {
         private bool rendered;
         private string html;
-
-        /// <summary>
-        /// Gets or sets the reference to the JavaScript runtime.
-        /// </summary>
-        [Inject]
-        public IJSRuntime JsRuntime { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the preview is shown in an
@@ -40,15 +33,15 @@ namespace PlanetaryDocs.Shared
                 if (value != html)
                 {
                     html = value;
-                    InvokeAsync(OnUpdateAsync);
+                    HtmlToRender = new MarkupString(html);
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the reference to the internal container for the preview.
+        /// Gets the HTML to render.
         /// </summary>
-        protected ElementReference HtmlContainer { get; set; }
+        protected MarkupString HtmlToRender { get; private set; }
 
         /// <summary>
         /// Gets the CSS class to use based on the mode.
@@ -68,10 +61,7 @@ namespace PlanetaryDocs.Shared
         {
             if (rendered)
             {
-                await JsRuntime.InvokeVoidAsync(
-                    "markdownExtensions.toHtml",
-                    Html,
-                    HtmlContainer);
+                await InvokeAsync(() => HtmlToRender = new MarkupString(Html));
             }
         }
 

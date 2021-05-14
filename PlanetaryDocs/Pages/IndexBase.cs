@@ -187,13 +187,6 @@ namespace PlanetaryDocs.Pages
 
             StateHasChanged();
 
-            var searchParameters = new[]
-            {
-                (nameof(Text), WebUtility.UrlEncode(Text)),
-                (nameof(Alias), WebUtility.UrlEncode(Alias)),
-                (nameof(Tag), WebUtility.UrlEncode(Tag)),
-            };
-
             var queryString =
                 NavigationHelper.CreateQueryString(
                     (nameof(Text), WebUtility.UrlEncode(Text)),
