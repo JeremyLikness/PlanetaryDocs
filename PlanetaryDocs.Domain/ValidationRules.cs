@@ -48,12 +48,11 @@ namespace PlanetaryDocs.Domain
         /// </summary>
         /// <param name="message">The validation message.</param>
         /// <returns>The <see cref="ValidationState"/>.</returns>
-        public static ValidationState InvalidResult(string message) =>
-            new ()
-            {
-                IsValid = false,
-                Message = message,
-            };
+        public static ValidationState InvalidResult(string message) => new ()
+        {
+            IsValid = false,
+            Message = message,
+        };
 
         /// <summary>
         /// Handles multiple results and returns the first invalid result.
@@ -89,8 +88,8 @@ namespace PlanetaryDocs.Domain
         public static ValidationState IsRequired(
             string fieldName,
             string val) => string.IsNullOrWhiteSpace(val) ?
-                InvalidResult($"{fieldName} is required.")
-                : ValidResult();
+   InvalidResult($"{fieldName} is required.")
+   : ValidResult();
 
         /// <summary>
         /// Validates only alpha allowed.
@@ -150,7 +149,7 @@ namespace PlanetaryDocs.Domain
                     continue;
                 }
 
-                bool rangeCheck = false;
+                var rangeCheck = false;
                 foreach (var range in limits)
                 {
                     if (rangeCheck)
@@ -180,9 +179,7 @@ namespace PlanetaryDocs.Domain
         /// <returns>The <see cref="ValidationState"/>.</returns>
         public static ValidationState ValidateProperty(
             string name,
-            string value)
-        {
-            return name switch
+            string value) => name switch
             {
                 nameof(Document.AuthorAlias) => CompoundResult(
                                        name,
@@ -208,23 +205,22 @@ namespace PlanetaryDocs.Domain
 
                 _ => InvalidResult("Unknown property."),
             };
-        }
 
         /// <summary>
         /// Validates all fields on the <see cref="Document"/>.
         /// </summary>
         /// <param name="doc">The <see cref="Document"/> to validate.</param>
         /// <returns>The <see cref="ValidationState"/>.</returns>
-        public static ValidationState[] ValidateDocument(Document doc)
-        => doc == null ?
-            new[] { InvalidResult("Document cannot be null") }
-            : new[]
-            {
-                ValidateProperty(nameof(Document.Uid), doc.Uid),
-                ValidateProperty(nameof(Document.AuthorAlias), doc.AuthorAlias),
-                ValidateProperty(nameof(Document.Description), doc.Description),
-                ValidateProperty(nameof(Document.Markdown), doc.Markdown),
-                ValidateProperty(nameof(Document.Title), doc.Title),
-            };
+        public static ValidationState[] ValidateDocument(Document doc) =>
+            doc == null
+                ? new[] { InvalidResult("Document cannot be null") }
+                : new[]
+                {
+                    ValidateProperty(nameof(Document.Uid), doc.Uid),
+                    ValidateProperty(nameof(Document.AuthorAlias), doc.AuthorAlias),
+                    ValidateProperty(nameof(Document.Description), doc.Description),
+                    ValidateProperty(nameof(Document.Markdown), doc.Markdown),
+                    ValidateProperty(nameof(Document.Title), doc.Title),
+                };
     }
 }

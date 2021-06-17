@@ -76,7 +76,6 @@ namespace PlanetaryDocs.Domain
         /// The string representation.
         /// </summary>
         /// <returns>The string representation of the instance.</returns>
-        public override string ToString() =>
-            $"Summary for audit {Id} with document {Uid}.";
+        public override string ToString() => $"Summary for audit {Id} with document {Uid}.";
     }
 }

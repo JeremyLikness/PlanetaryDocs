@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Jeremy Likness. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using PlanetaryDocs.Domain;
@@ -15,12 +14,7 @@ namespace PlanetaryDocs.Pages
     /// </summary>
     public class AddBase : ComponentBase
     {
-        private bool loading = true;
-        private bool saving = false;
-        private Document document = new ();
         private bool isValid = false;
-        private int changeCount = 0;
-        private Editor editor;
 
         /// <summary>
         /// Gets or sets the navigation service.
@@ -71,27 +65,27 @@ namespace PlanetaryDocs.Pages
         /// <summary>
         /// Gets or sets a value indicating whether a loading operation is taking place.
         /// </summary>
-        protected bool Loading { get => loading; set => loading = value; }
+        protected bool Loading { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether a save operation is in effect.
         /// </summary>
-        protected bool Saving { get => saving; set => saving = value; }
+        protected bool Saving { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the <see cref="Document"/> being added.
         /// </summary>
-        protected Document Document { get => document; set => document = value; }
+        protected Document Document { get; set; } = new ();
 
         /// <summary>
         /// Gets or sets the count of changes detected.
         /// </summary>
-        protected int ChangeCount { get => changeCount; set => changeCount = value; }
+        protected int ChangeCount { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the <see cref="Editor"/> reference.
         /// </summary>
-        protected Editor Editor { get => editor; set => editor = value; }
+        protected Editor Editor { get; set; }
 
         /// <summary>
         /// Main save method.
@@ -109,7 +103,7 @@ namespace PlanetaryDocs.Pages
             await LoadingService.WrapExecutionAsync(async () =>
                 await DocumentService.InsertDocumentAsync(Document));
 
-            NavigationService.NavigateTo(NavigationHelper.ViewDocument(document.Uid), true);
+            NavigationService.NavigateTo(NavigationHelper.ViewDocument(Document.Uid), true);
         }
 
         /// <summary>
@@ -121,7 +115,7 @@ namespace PlanetaryDocs.Pages
         {
             if (firstRender)
             {
-                await TitleService.SetTitleAsync($"Adding new document");
+                await TitleService.SetTitleAsync("Adding new document");
                 Editor.ValidateAll(Document);
             }
 

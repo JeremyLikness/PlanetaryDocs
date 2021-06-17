@@ -17,9 +17,9 @@ const string EndPoint = "https://<youraccount>.documents.azure.com:443/";
 const string AccessKey = "<yourkey>";
 
 // set to true to re-run tests without rebuilding db
-bool testsOnly = false;
+var testsOnly = false;
 
-if (testsOnly == false && !Directory.Exists(DocsPath))
+if (!testsOnly && !Directory.Exists(DocsPath))
 {
     Console.WriteLine($"Invalid path to docs: {DocsPath}");
     return;
@@ -27,7 +27,7 @@ if (testsOnly == false && !Directory.Exists(DocsPath))
 
 List<Document> docsList = null;
 
-if (testsOnly == false)
+if (!testsOnly)
 {
     var filesToParse = FileSystemParser.FindCandidateFiles(DocsPath);
     docsList = MarkdownParser.ParseFiles(filesToParse);

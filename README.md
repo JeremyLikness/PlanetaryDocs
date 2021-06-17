@@ -85,13 +85,13 @@ and signature (interface) for data access.
 and an implementation of the data access service.
 
 - `DocsContext`
-    - Has nodel-building code that shows how to map ownership
+    - Has model-building code that shows how to map ownership
     - Uses value converters with JSON serialization to support primitives collection and nested
 complex types
     - Demonstrates use of partition keys, including how to define them for the
 model and how to specify them in queries
     - Provides an example of specifying the container by entity
-    - Shows how to turn off the discrinator
+    - Shows how to turn off the discriminator
     - Stores two entity types (aliases and tags) in the same container
     - Uses a "shadow property" to track partition keys on aliases and tags
     - Hooks into the `SavingChanges` event to automate the generation of audit snapshots

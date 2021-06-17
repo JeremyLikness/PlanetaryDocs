@@ -70,6 +70,6 @@ namespace PlanetaryDocs.Shared
         /// <param name="audit">The <see cref="DocumentAuditSummary"/>.</param>
         protected void Navigate(DocumentAuditSummary audit) =>
             NavigationService.NavigateTo(
-                NavigationHelper.ViewDocument(audit.Uid, audit.Id), true);
+            NavigationHelper.ViewDocument(audit.Uid, audit.Id), true);
     }
 }

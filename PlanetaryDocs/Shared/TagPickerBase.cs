@@ -69,7 +69,7 @@ namespace PlanetaryDocs.Shared
         /// Gets the base index for tabs.
         /// </summary>
         protected int BaseIndex =>
-            int.TryParse(TabIndex, out int idx) ? idx :
+            int.TryParse(TabIndex, out var idx) ? idx :
             100;
 
         /// <summary>

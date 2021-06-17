@@ -32,7 +32,7 @@ namespace PlanetaryDocsLoader
             while (dirsToVisit.Count > 0)
             {
                 var dir = dirsToVisit.Pop();
-                Console.Write($":");
+                Console.Write(":");
 
                 foreach (var subDirectory in Directory.EnumerateDirectories(dir))
                 {

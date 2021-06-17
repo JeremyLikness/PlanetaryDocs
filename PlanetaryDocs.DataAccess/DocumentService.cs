@@ -26,8 +26,8 @@ namespace PlanetaryDocs.DataAccess
         /// Initializes a new instance of the <see cref="DocumentService"/> class.
         /// </summary>
         /// <param name="factory">The factory instance.</param>
-        public DocumentService(IDbContextFactory<DocsContext> factory)
-            => this.factory = factory;
+        public DocumentService(IDbContextFactory<DocsContext> factory) =>
+            this.factory = factory;
 
         /// <summary>
         /// Add a new document.
@@ -74,7 +74,7 @@ namespace PlanetaryDocs.DataAccess
 
             var result = new HashSet<DocumentSummary>();
 
-            bool partialResults = false;
+            var partialResults = false;
 
             if (!string.IsNullOrWhiteSpace(authorAlias))
             {
@@ -90,7 +90,7 @@ namespace PlanetaryDocs.DataAccess
             {
                 var tagEntity = await context.FindMetaAsync<Tag>(tag);
 
-                IEnumerable<DocumentSummary> resultSet =
+                var resultSet =
                     Enumerable.Empty<DocumentSummary>();
 
                 // alias _AND_ tag
@@ -252,7 +252,7 @@ namespace PlanetaryDocs.DataAccess
             using var context = factory.CreateDbContext();
             var docToDelete = await LoadDocumentAsync(uid);
             var author = await context.FindMetaAsync<Author>(docToDelete.AuthorAlias);
-            var summary = author.Documents.Where(d => d.Uid == uid).FirstOrDefault();
+            var summary = author.Documents.Find(d => d.Uid == uid);
             if (summary != null)
             {
                 author.Documents.Remove(summary);
@@ -262,7 +262,7 @@ namespace PlanetaryDocs.DataAccess
             foreach (var tag in docToDelete.Tags)
             {
                 var tagEntity = await context.FindMetaAsync<Tag>(tag);
-                var tagSummary = tagEntity.Documents.Where(d => d.Uid == uid).FirstOrDefault();
+                var tagSummary = tagEntity.Documents.Find(d => d.Uid == uid);
                 if (tagSummary != null)
                 {
                     tagEntity.Documents.Remove(tagSummary);
@@ -345,7 +345,7 @@ namespace PlanetaryDocs.DataAccess
                     if (tag != null)
                     {
                         var docSummary =
-                            tag.Documents.FirstOrDefault(
+                            tag.Documents.Find(
                                 d => d.Uid == document.Uid);
 
                         if (docSummary != null)

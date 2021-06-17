@@ -18,10 +18,8 @@ namespace PlanetaryDocs.Services
         /// Initializes a new instance of the <see cref="HistoryService"/> class.
         /// </summary>
         /// <param name="jsRuntime">The implementation of the JavaScript runtime.</param>
-        public HistoryService(IJSRuntime jsRuntime)
-        {
+        public HistoryService(IJSRuntime jsRuntime) =>
             goBack = () => jsRuntime.InvokeVoidAsync("history.go", "-1");
-        }
 
         /// <summary>
         /// Exposes the go back function.

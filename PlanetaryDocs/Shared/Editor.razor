@@ -17,13 +17,13 @@
                 </div>
             }
         </div>
-        @if (ValidationStates.Any(vr => vr.IsValid == false))
+        @if (ValidationStates.Any(vr => !vr.IsValid))
         {
             <div class="row">
                 <div class="col-12">
                     <ul>
                         @foreach (var vr in ValidationStates.Where
-(v => v.IsValid == false))
+(v => !v.IsValid))
                         {
                             <li><span class="oi oi-warning"></span>&nbsp;@vr.Message</li>
                         }
