@@ -21,7 +21,7 @@ namespace DomainTests
         public void HashCode_Of_Author_Is_HashCode_Of_Alias()
         {
             // arrange
-            var alias = nameof(AuthorTests);
+            const string alias = nameof(AuthorTests);
             var author = new Author { Alias = alias };
 
             // act
@@ -76,7 +76,7 @@ namespace DomainTests
         {
             // arrange
             var author = new Author { Alias = alias };
-            for (var idx = 0; idx < expectedDocs; idx += 1)
+            for (var idx = 0; idx < expectedDocs; idx++)
             {
                 var summary = new DocumentSummary
                 {

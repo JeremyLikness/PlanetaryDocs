@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PlanetaryDocs.Domain;
 using Xunit;
 
@@ -24,7 +21,7 @@ namespace DomainTests
         public void HashCode_Is_Uid_HashCode()
         {
             // arrange
-            var uid = nameof(DocumentTests);
+            const string uid = nameof(DocumentTests);
             var doc = new Document { Uid = uid };
             var expected = uid.GetHashCode();
 
@@ -63,7 +60,6 @@ namespace DomainTests
                 anonDoc,
                 false
             };
-
         }
 
         [Theory]

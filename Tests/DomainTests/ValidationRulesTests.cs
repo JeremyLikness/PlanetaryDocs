@@ -82,7 +82,7 @@ namespace DomainTests
                 nameof(ValidationRulesTests),
                 states.Select(
                     state =>
-                    (Func<string, string, ValidationState>)((field, value) => state)).ToArray());
+                    (Func<string, string, ValidationState>)((_, __) => state)).ToArray());
 
             // assert
             if (expected.IsValid)
@@ -352,13 +352,13 @@ namespace DomainTests
 
         public static IEnumerable<object[]> DocumentMatrix()
         {
-            var uid = "uid";
-            var title = "Good title";
-            var alias = "dune";
-            var description = "Muad'Dib knows how to wear a stillsuite.";
-            var markdown = "# Jam On It";
+            const string uid = "uid";
+            const string title = "Good title";
+            const string alias = "dune";
+            const string description = "Muad'Dib knows how to wear a stillsuite.";
+            const string markdown = "# Jam On It";
 
-            for (var docType = 0; docType < 7; docType += 1)
+            for (var docType = 0; docType < 7; docType++)
             {
                 var document = docType == 6 ?
                     new Document() :

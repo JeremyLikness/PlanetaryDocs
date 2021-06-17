@@ -34,7 +34,7 @@ namespace PlanetaryDocs.DataAccess
         /// <param name="options">The configuration options.</param>
         public DocsContext(DbContextOptions<DocsContext> options)
             : base(options) =>
-                 SavingChanges += DocsContext_SavingChanges;
+                SavingChanges += DocsContext_SavingChanges;
 
         /// <summary>
         /// Gets or sets the audits collection.

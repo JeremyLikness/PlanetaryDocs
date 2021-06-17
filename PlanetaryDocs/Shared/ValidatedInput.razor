@@ -8,7 +8,7 @@
                 <textarea @ref="TextAreaControl"
                           tabindex="@TabIndex"
                           class="@Error"
-                          rows="10" 
+                          rows="10"
                           cols="40"
                           @bind-value="@InnerValue"
                           @bind-value:event="oninput">
@@ -16,12 +16,12 @@
             }
             else
             {
-            <input @ref="InputControl"
-                   tabindex="@TabIndex"
-                   class="@Error"
-                   type="text" 
-                   @bind-value="@InnerValue" 
-                   @bind-value:event="oninput"/>        
+                <input @ref="InputControl"
+                       tabindex="@TabIndex"
+                       class="@Error"
+                       type="text"
+                       @bind-value="@InnerValue"
+                       @bind-value:event="oninput" />
             }
         </div>
     </div>

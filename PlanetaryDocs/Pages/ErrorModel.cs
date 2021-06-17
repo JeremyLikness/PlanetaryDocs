@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace PlanetaryDocs.Pages
 {
@@ -28,9 +27,6 @@ namespace PlanetaryDocs.Pages
         /// <summary>
         /// On get method.
         /// </summary>
-        public void OnGet()
-        {
-            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
-        }
+        public void OnGet() => RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
     }
 }

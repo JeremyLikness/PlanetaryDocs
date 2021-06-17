@@ -55,13 +55,13 @@ namespace PlanetaryDocs.Shared
         /// Reset method returns to pre-edited state.
         /// </summary>
         protected void Reset() => NavigationService.NavigateTo(
-            NavigationService.Uri,
-            true);
+NavigationService.Uri,
+true);
 
         /// <summary>
         /// Cancel goes back to previous page.
         /// </summary>
         protected void Cancel() => InvokeAsync(async () =>
-            await HistoryService.GoBackAsync());
+                     await HistoryService.GoBackAsync());
     }
 }

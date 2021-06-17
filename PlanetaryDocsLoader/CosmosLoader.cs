@@ -38,7 +38,7 @@ namespace PlanetaryDocsLoader
                 text = string.Empty,
                 uid = string.Empty;
 
-            bool testOnly = docsList == null;
+            var testOnly = docsList == null;
 
             var sc = new ServiceCollection();
             sc.AddDbContextFactory<DocsContext>(
@@ -182,7 +182,7 @@ namespace PlanetaryDocsLoader
         {
             var start = TestStart();
             Console.WriteLine("Testing author search...");
-            for (var x = 1; x < alias.Length - 1; x += 1)
+            for (var x = 1; x < alias.Length - 1; x++)
             {
                 var search = alias.Substring(0, x);
                 var results = await service.SearchAuthorsAsync(search);
@@ -204,7 +204,7 @@ namespace PlanetaryDocsLoader
         {
             var start = TestStart();
             Console.WriteLine("Testing tag search...");
-            for (var x = 1; x < tag.Length - 1; x += 1)
+            for (var x = 1; x < tag.Length - 1; x++)
             {
                 var search = tag.Substring(0, x);
                 var results = await service.SearchTagsAsync(search);
@@ -343,7 +343,7 @@ namespace PlanetaryDocsLoader
         /// </summary>
         /// <param name="start">The start time.</param>
         /// <param name="test">The test.</param>
-        private static void TestEnd(long start, [CallerMemberName]string test = null)
+        private static void TestEnd(long start, [CallerMemberName] string test = null)
         {
             var time = TimeSpan.FromTicks(DateTime.UtcNow.Ticks - start);
             Console.WriteLine($"==== Test time: {time}");

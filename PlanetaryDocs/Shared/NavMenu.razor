@@ -17,7 +17,7 @@
         @foreach (var navItem in NavItems)
         {
             <li @key="navItem.Text" class="nav-item px-3">
-                @if (navItem.Disabled == false)
+                @if (!navItem.Disabled)
                 {
                     <NavLink class="nav-link"
                              href="@navItem.Href"

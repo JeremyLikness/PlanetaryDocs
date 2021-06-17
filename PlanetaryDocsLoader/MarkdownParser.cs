@@ -44,11 +44,11 @@ namespace PlanetaryDocsLoader
 
                 var markdown = new List<string>();
 
-                for (var idx = 0; idx < lines.Length; idx += 1)
+                for (var idx = 0; idx < lines.Length; idx++)
                 {
                     var line = lines[idx];
 
-                    if (metaStart == false)
+                    if (!metaStart)
                     {
                         if (line.StartsWith("---"))
                         {
@@ -58,7 +58,7 @@ namespace PlanetaryDocsLoader
                         continue;
                     }
 
-                    if (metaEnd == false)
+                    if (!metaEnd)
                     {
                         if (line.StartsWith("---"))
                         {

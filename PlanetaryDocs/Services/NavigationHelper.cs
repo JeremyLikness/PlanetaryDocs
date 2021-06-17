@@ -22,8 +22,8 @@ namespace PlanetaryDocs.Services
         public static string ViewDocument(
             string uid,
             Guid auditId = default) =>
-            auditId == default ?
-                $"/View/{Web.UrlEncode(uid)}"
+                auditId == default
+                ? $"/View/{Web.UrlEncode(uid)}"
                 : $"/View/{Web.UrlEncode(uid)}?history={Web.UrlEncode(auditId.ToString())}";
 
         /// <summary>

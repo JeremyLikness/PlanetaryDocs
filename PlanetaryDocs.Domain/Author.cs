@@ -18,7 +18,7 @@ namespace PlanetaryDocs.Domain
         /// <summary>
         /// Gets the list of documents by this author.
         /// </summary>
-        public List<DocumentSummary> Documents { get; private set; }
+        public List<DocumentSummary> Documents { get; }
             = new List<DocumentSummary>();
 
         /// <summary>

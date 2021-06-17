@@ -24,10 +24,7 @@ namespace PlanetaryDocs
         /// Initializes a new instance of the <see cref="Startup"/> class.
         /// </summary>
         /// <param name="configuration">The configuration information.</param>
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => Configuration = configuration;
 
         /// <summary>
         /// Gets t configuration instance.

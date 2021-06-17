@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 
 using System;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -156,11 +155,9 @@ namespace PlanetaryDocs.Pages
         /// <summary>
         /// Go back to main version of the document.
         /// </summary>
-        protected void BackToMain()
-        {
+        protected void BackToMain() =>
             NavigationService.NavigateTo(
                 NavigationHelper.ViewDocument(Uid),
                 true);
-        }
     }
 }

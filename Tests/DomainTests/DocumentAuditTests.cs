@@ -8,10 +8,9 @@ namespace DomainTests
 {
     public class DocumentAuditTests
     {
-        const string Uid = nameof(DocumentAuditTests);
-        const string Author = "jeliknes";
-        const string Markdown = "# Hi";
-        const string Html = "<h1>Hi</h1>";
+        private const string Author = "jeliknes";
+        private const string Markdown = "# Hi";
+        private const string Html = "<h1>Hi</h1>";
 
         private readonly DateTime PublishDate =
             DateTime.UtcNow.AddDays(-2);
@@ -25,7 +24,7 @@ namespace DomainTests
                 Html = Html,
                 Markdown = Markdown,
                 PublishDate = PublishDate,
-                Title = $"Title of document"
+                Title = "Title of document"
             };
 
             doc.Tags.Add("one");

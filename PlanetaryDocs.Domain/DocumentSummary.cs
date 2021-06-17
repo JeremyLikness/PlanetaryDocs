@@ -60,7 +60,6 @@ namespace PlanetaryDocs.Domain
         /// Gets the string representation.
         /// </summary>
         /// <returns>The string representation.</returns>
-        public override string ToString() =>
-            $"Summary for {Uid} by {AuthorAlias}: {Title}.";
+        public override string ToString() => $"Summary for {Uid} by {AuthorAlias}: {Title}.";
     }
 }

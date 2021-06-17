@@ -15,26 +15,25 @@ namespace PlanetaryDocs.Shared
         /// Gets the list of navigation items.
         /// </summary>
         protected NavItem[] NavItems
-        { get; private set; }
-        = new[]
-        {
-            new NavItem
+        { get; } = new[]
             {
-                Disabled = false,
-                Text = "Home",
-                Icon = "home",
-                Href = string.Empty,
-                Match = NavLinkMatch.All,
-            },
-            new NavItem { Disabled = true, Text = "View", Icon = "eye", Href = "/View" },
-            new NavItem { Disabled = false, Text = "Add New", Icon = "plus", Href = "/Add" },
-            new NavItem { Disabled = true, Text = "Edit", Icon = "pencil", Href = "/Edit" },
-        };
+                new NavItem
+                {
+                    Disabled = false,
+                    Text = "Home",
+                    Icon = "home",
+                    Href = string.Empty,
+                    Match = NavLinkMatch.All,
+                },
+                new NavItem { Disabled = true, Text = "View", Icon = "eye", Href = "/View" },
+                new NavItem { Disabled = false, Text = "Add New", Icon = "plus", Href = "/Add" },
+                new NavItem { Disabled = true, Text = "Edit", Icon = "pencil", Href = "/Edit" },
+            };
 
         /// <summary>
         /// Gets or sets a value indicating whether the menu should be collapsed.
         /// </summary>
-        protected bool CollapseNavMenu { get; set;  } = true;
+        protected bool CollapseNavMenu { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the version.

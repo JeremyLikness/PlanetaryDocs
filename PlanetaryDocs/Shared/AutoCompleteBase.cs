@@ -31,7 +31,7 @@ namespace PlanetaryDocs.Shared
             set
             {
                 tabIndex = value;
-                if (int.TryParse(value, out int numIndex))
+                if (int.TryParse(value, out var numIndex))
                 {
                     BaseIndex = numIndex;
                 }
@@ -116,18 +116,18 @@ namespace PlanetaryDocs.Shared
         /// <param name="item">The item to get the CSS class for.</param>
         /// <returns>The class name.</returns>
         protected string GetClass(string item) =>
-            index >= 0 && item == Values[index] ?
-                "active" : string.Empty;
+            index >= 0 && item == Values[index]
+            ? "active"
+            : string.Empty;
 
         /// <summary>
         /// Gets the tab index of the item.
         /// </summary>
         /// <param name="item">The item to compute the index for.</param>
         /// <returns>The index as a string.</returns>
-        protected string GetIndex(string item) =>
-            Values.IndexOf(item) >= 0 ?
-            (Values.IndexOf(item) + BaseIndex).ToString() :
-            string.Empty;
+        protected string GetIndex(string item) => Values.IndexOf(item) >= 0
+? (Values.IndexOf(item) + BaseIndex).ToString()
+: string.Empty;
 
         /// <summary>
         /// Called when parents have passed parameters down to child.
