@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Jeremy Likness. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Newtonsoft.Json;
 using PlanetaryDocs.Domain;
 
 namespace PlanetaryDocs.DataAccess
@@ -120,6 +117,39 @@ namespace PlanetaryDocs.DataAccess
                     ComputePartitionKey<T>();
 
         /// <summary>
+        /// Migrate from EF Core 5 to EF Core 6.
+        /// </summary>
+        /// <param name="checkId">Document to check.</param>
+        /// <returns>The asynchronous task.</returns>
+        public async Task CheckAndMigrateTagsAsync(string checkId)
+        {
+            bool migrated = true;
+
+            try
+            {
+                var doc = await Documents.FindAsync(checkId);
+            }
+            catch (JsonSerializationException)
+            {
+                migrated = false;
+            }
+
+            if (migrated)
+            {
+                return;
+            }
+
+            var docs = await Documents.FromSqlRaw(
+                "select c.id, c.Uid, c.AuthorAlias, c.Description, c.Html, c.Markdown, c.PublishDate, c.Title, STRINGTOARRAY(c.Tags) as Tags from c").ToListAsync();
+            foreach (var doc in docs)
+            {
+                Entry(doc).State = EntityState.Modified;
+            }
+
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
         /// Configure the model that maps the domain to the backend.
         /// </summary>
         /// <param name="modelBuilder">The API for model configuration.</param>
@@ -141,11 +171,6 @@ namespace PlanetaryDocs.DataAccess
                 .Property(p => p.ETag)
                 .IsETagConcurrency();
 
-            docModel.Property(d => d.Tags)
-                .HasConversion(
-                    t => ToJson(t),
-                    t => FromJson<List<string>>(t));
-
             var tagModel = modelBuilder.Entity<Tag>();
 
             tagModel.Property<string>(PartitionKey);
@@ -158,8 +183,6 @@ namespace PlanetaryDocs.DataAccess
             tagModel.Property(t => t.ETag)
                 .IsETagConcurrency();
 
-            tagModel.OwnsMany(t => t.Documents);
-
             var authorModel = modelBuilder.Entity<Author>();
 
             authorModel.Property<string>(PartitionKey);
@@ -171,28 +194,8 @@ namespace PlanetaryDocs.DataAccess
             authorModel.Property(a => a.ETag)
                 .IsETagConcurrency();
 
-            authorModel.OwnsMany(t => t.Documents);
-
             base.OnModelCreating(modelBuilder);
         }
-
-        /// <summary>
-        /// Serialize a type to JSON.
-        /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <param name="item">The instance.</param>
-        /// <returns>The serialized JSON.</returns>
-        private static string ToJson<T>(T item) =>
-            JsonSerializer.Serialize(item);
-
-        /// <summary>
-        /// Deserialize a type from JSON.
-        /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <param name="json">The JSON.</param>
-        /// <returns>The entity.</returns>
-        private static T FromJson<T>(string json) =>
-            JsonSerializer.Deserialize<T>(json);
 
         /// <summary>
         /// Intercepts saving changes to store audits.

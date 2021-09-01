@@ -112,6 +112,10 @@ namespace PlanetaryDocs.Services
             {
                 await execution();
             }
+            catch
+            {
+                throw;
+            }
             finally
             {
                 AsyncEnd();

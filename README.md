@@ -1,8 +1,10 @@
 # Planetary Docs
 
-[![.NET 5 Builds](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml/badge.svg)](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml)
+__NEW__ upgraded to .NET 6 and EF Core 6!
 
-[![.NET 5 Tests](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/tests.yml/badge.svg)](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/tests.yml)
+[![.NET 6 Builds](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml/badge.svg)](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml)
+
+[![.NET 6 Tests](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/tests.yml/badge.svg)](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/tests.yml)
 
 Welcome to Planetary Docs! This repository is intended to showcase a full
 application that supports Create, Read, Update, and Delete operations (CRUD)
@@ -18,6 +20,18 @@ This project is licensed under MIT. See the [license file](./LICENSE) for more i
 is not a production-ready app. More specifically, there are no users or roles defined and
 access is _not_ secured by a login. That means anyone with the URL can modify your 
 document database. This issue is being tracked at [#2](https://github.com/JeremyLikness/PlanetaryDocs/issues/2).
+
+## New: EF Core 6
+
+This project has been updated to use EF Core 6. This simplified the code a bit:
+
+- Removed converter for tags as EF Core 6 directly supports collections of primtives
+- Removed `HasMany` configuration as EF Core 6 recognizes implicit ownership of complex types for the Azure Cosmos DB provider
+- Added code to migrate from the old model that serialized tags as a single JSON string to the new model that stores first class string arrays
+
+> **Note:** If you are running the project for the first time, set `EnableMigrations` to `false` in the `appsettings.json` file. Leave it as is and make sure the id to check is valid
+if you are upgrading from 5.0. The first time you run the app, it will detect the old format and use the new `FromRawSql` capabilities to load the old format and save it
+to the new format.
 
 ## Quickstart
 

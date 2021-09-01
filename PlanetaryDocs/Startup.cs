@@ -66,7 +66,13 @@ namespace PlanetaryDocs
         /// </summary>
         /// <param name="app">The app builder.</param>
         /// <param name="env">The current environment.</param>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        /// <param name="factory">Context factory.</param>
+        /// <param name="cs">The Cosmos settings.</param>
+        public void Configure(
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            IDbContextFactory<DocsContext> factory,
+            IOptions<CosmosSettings> cs)
         {
             if (env.IsDevelopment())
             {
@@ -78,6 +84,15 @@ namespace PlanetaryDocs
 
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+            }
+
+            if (cs.Value.EnableMigration)
+            {
+                using var context = factory.CreateDbContext();
+                context.CheckAndMigrateTagsAsync(cs.Value.DocumentToCheck).
+                    ConfigureAwait(true)
+                    .GetAwaiter()
+                    .GetResult();
             }
 
             app.UseHttpsRedirection();
