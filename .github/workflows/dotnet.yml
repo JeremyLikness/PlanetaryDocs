@@ -25,6 +25,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
         include-prerelease: true
+        source-url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
     - name: install versioning tool
       run: dotnet tool install --tool-path . nbgv
     - name: Install dependencies
