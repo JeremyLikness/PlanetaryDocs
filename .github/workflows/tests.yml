@@ -22,5 +22,7 @@ jobs:
         dotnet-version: 6.0.x
         include-prerelease: true
         source-url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
+      env: 
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - name: Run all tests
       run: dotnet test PlanetaryDocs.sln --logger trx
