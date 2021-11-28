@@ -115,10 +115,10 @@ namespace PlanetaryDocsLoader
             var start = TestStart();
             var doc = await service.LoadDocumentAsync(uid);
             Console.WriteLine("Loaded document:");
-            Console.WriteLine($"Title:\t{doc.Title}");
-            Console.WriteLine($"Description:\t{doc.Description}");
+            Console.WriteLine($"Title:\t{doc?.Title}");
+            Console.WriteLine($"Description:\t{doc?.Description}");
             Console.Write("Tags:\t");
-            Console.WriteLine(string.Join(", ", doc.Tags));
+            Console.WriteLine(string.Join(", ", doc?.Tags));
             TestEnd(start);
         }
 

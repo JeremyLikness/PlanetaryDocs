@@ -8,13 +8,13 @@ using PlanetaryDocs.Domain;
 using PlanetaryDocsLoader;
 
 // path to repository
-const string DocsPath = @"C:\path\to\aspnetcore.docs";
+const string DocsPath = @"..\..\..\..";// @"C:\path\to\aspnetcore.docs";
 
 // Azure Cosmos DB endpoint
-const string EndPoint = "https://<youraccount>.documents.azure.com:443/";
+string EndPoint = new System.Text.RegularExpressions.Regex("\\\\").Replace(Environment.GetEnvironmentVariable("COSMOS_ENDPOINT"), "/"); // "https://<youraccount>.documents.azure.com:443/";
 
 // Secret key for Azure Cosmos DB
-const string AccessKey = "<yourkey>";
+string AccessKey = Environment.GetEnvironmentVariable("COSMOS_ACCOUNTKEY");// "<yourkey>";
 
 // set to true to re-run tests without rebuilding db
 var testsOnly = false;
@@ -29,7 +29,7 @@ List<Document> docsList = null;
 
 if (!testsOnly)
 {
-    var filesToParse = FileSystemParser.FindCandidateFiles(DocsPath);
+    var filesToParse = FileSystemParser.FindCandidateFiles(Path.GetFullPath(DocsPath));
     docsList = MarkdownParser.ParseFiles(filesToParse);
 }
 

@@ -9,7 +9,7 @@ namespace PlanetaryDocs
     /// <summary>
     /// Main program.
     /// </summary>
-    public static class Program
+    public static class PlanetaryDocsMainProgram
     {
         /// <summary>
         /// Main method.
@@ -25,6 +25,6 @@ namespace PlanetaryDocs
         /// <returns>The <see cref="IHostBuilder"/> instance.</returns>
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<PlanetaryDocsStartup>());
     }
 }

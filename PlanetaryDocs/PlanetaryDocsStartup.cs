@@ -18,13 +18,13 @@ namespace PlanetaryDocs
     /// <summary>
     /// Blazor startup.
     /// </summary>
-    public class Startup
+    public class PlanetaryDocsStartup
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// Initializes a new instance of the <see cref="PlanetaryDocsStartup"/> class.
         /// </summary>
         /// <param name="configuration">The configuration information.</param>
-        public Startup(IConfiguration configuration) => Configuration = configuration;
+        public PlanetaryDocsStartup(IConfiguration configuration) => Configuration = configuration;
 
         /// <summary>
         /// Gets t configuration instance.
