@@ -1,5 +1,12 @@
 # Planetary Docs
-
+---
+title: Planetary Docs
+uid: 3d1c342d-d7ab-4548-b20e-784aa7a425ba
+description: This is the readme for the Sample Program Planetary Docs to champion .NET Entity Framework Core for CosmosDB/SQL
+ms.author: @JeremyLikness
+ms.date: 04/22/2022
+no-loc: [astronomy], [Entity Framework], [.NET], [Core], [Sample], [Example]
+---
 __NEW__ upgraded to .NET 6 and EF Core 6!
 
 [![.NET 6 Builds](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml/badge.svg)](https://github.com/JeremyLikness/PlanetaryDocs/actions/workflows/dotnet.yml)

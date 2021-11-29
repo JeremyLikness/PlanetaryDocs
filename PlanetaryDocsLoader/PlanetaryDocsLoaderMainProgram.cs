@@ -14,7 +14,7 @@ const string DocsPath = @"..\..\..\..";// @"C:\path\to\aspnetcore.docs";
 string EndPoint = new System.Text.RegularExpressions.Regex("\\\\").Replace(Environment.GetEnvironmentVariable("COSMOS_ENDPOINT"), "/"); // "https://<youraccount>.documents.azure.com:443/";
 
 // Secret key for Azure Cosmos DB
-string AccessKey = Environment.GetEnvironmentVariable("COSMOS_ACCOUNTKEY");// "<yourkey>";
+string AccessKey = Environment.GetEnvironmentVariable("COSMOS_ACCOUNTKEY"); // "<yourkey>";
 
 // set to true to re-run tests without rebuilding db
 var testsOnly = false;

@@ -1,4 +1,12 @@
 # Contributor Covenant Code of Conduct
+---
+title: Contributor Covenant Code of Conduct
+uid: 430d12cc-9959-47eb-8d8b-3cec8a5f0f57
+description: Microsoft's pledge, standard, reponsibilities, scope, enforcment, attribution
+ms.author: @Mr_Microsoft
+ms.date: 08/22/2020
+no-loc: [conduct], [pledge], [standards], [responsibilities], [scope], [enforcement], [attibution]
+---
 
 ## Our Pledge
 

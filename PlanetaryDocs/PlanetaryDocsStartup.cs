@@ -49,8 +49,8 @@ namespace PlanetaryDocs
                        .Value;
 
                    opts.UseCosmos(
-                       cosmosSettings.EndPoint,
-                       cosmosSettings.AccessKey,
+                       new System.Text.RegularExpressions.Regex("\\\\").Replace(Environment.GetEnvironmentVariable("COSMOS_ENDPOINT"), "/"), //cosmosSettings.EndPoint,
+                       Environment.GetEnvironmentVariable("COSMOS_ACCOUNTKEY"), //cosmosSettings.AccessKey,
                        nameof(DocsContext));
                });
 

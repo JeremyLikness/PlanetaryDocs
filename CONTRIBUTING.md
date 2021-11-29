@@ -1,4 +1,13 @@
 # How to contribute
+---
+title: How to contribute
+uid: 2cd33764-11ad-4d15-9264-cf923954798c
+description: Guidelines on contributing to the Planetary docs project
+ms.author: @Mr_Microsoft
+ms.date: 08/22/2022
+no-loc: [feedback], [dicusssions], [bugs], [feature requesets], [contributing]
+---
+
 
 One of the easiest ways to contribute is to participate in discussions on GitHub issues. You can also contribute by submitting pull requests with code changes.
 
